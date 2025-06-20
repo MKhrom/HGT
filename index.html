@@ -3,128 +3,148 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Тест на множинні інтелекти – за моделлю множинного інтелекту Говарда Гарднера для Лілі Москалюк від Хром'яків</title>
-  <link rel="stylesheet" href="https://unpkg.com/ionicons@5.5.2/dist/ionicons.css">
+  <title>Тест на множинні інтелекти – iOS стиль</title>
   <style>
-    :root {
-      --red: #ff3b30;
-      --yellow: #ffcc00;
-      --light-green: #34c759;
-      --green: #30d158;
-      --text-dark: #000;
-      --text-light: #fff;
-      --ios-bg: #f2f2f7;
-      --ios-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      --ios-radius: 20px;
-    }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--ios-bg);
-      color: var(--text-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 700px;
       margin: 0 auto;
       padding: 20px;
-      max-width: 500px;
+      background-color: #f2f2f7;
+      color: #111;
     }
 
-    input, select, button {
-      font-size: 1.1em;
-      border-radius: var(--ios-radius);
-      border: 1px solid #ccc;
-      padding: 12px;
-      width: 100%;
-      box-sizing: border-box;
-      margin-bottom: 15px;
-      box-shadow: var(--ios-shadow);
-      background-color: #fff;
-    }
-
-    button {
+    h2, h3 {
       font-weight: 600;
     }
 
-    button:hover {
-      filter: brightness(85%);
+    input, select {
+      font-size: 1em;
+      padding: 14px;
+      width: 90%;
+      max-width: 320px;
+      border: 1px solid #ccc;
+      border-radius: 14px;
+      margin: 10px 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      background-color: #fff;
+    }
+
+    #start-btn {
+      background-color: #007aff;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 24px;
+      font-size: 1.1em;
+      margin-top: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    #start-btn:hover {
+      background-color: #005bb5;
     }
 
     .question {
       font-size: 1.2em;
-      font-weight: 600;
-      margin-bottom: 15px;
-      text-align: center;
+      font-weight: 500;
+      margin: 20px 0 15px;
+      transition: all 0.4s ease;
     }
 
     .options button {
       display: block;
+      width: 100%;
       margin: 10px 0;
-      padding: 15px;
-      text-align: center;
+      padding: 14px;
       font-size: 1em;
-      transition: 0.3s;
       border: none;
-      border-radius: var(--ios-radius);
-      box-shadow: var(--ios-shadow);
+      border-radius: 14px;
       cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
 
-    .options button:nth-child(1) {
-      background-color: var(--red);
-      color: var(--text-light);
-    }
-
-    .options button:nth-child(2) {
-      background-color: var(--yellow);
-      color: var(--text-dark);
-    }
-
-    .options button:nth-child(3) {
-      background-color: var(--light-green);
-      color: var(--text-light);
-    }
-
-    .options button:nth-child(4) {
-      background-color: var(--green);
-      color: var(--text-light);
-    }
+    .btn-1 { background-color: #ff3b30; color: white; }
+    .btn-2 { background-color: #ffcc00; color: black; }
+    .btn-3 { background-color: #34c759; color: white; }
+    .btn-4 { background-color: #0a84ff; color: white; }
 
     .options button:hover {
-      filter: invert(100%) brightness(85%);
+      filter: brightness(85%);
     }
 
-    #result {
-      background: white;
-      padding: 20px;
-      border-radius: var(--ios-radius);
-      box-shadow: var(--ios-shadow);
-      margin-top: 30px;
+    #quiz-container {
+      animation: fadeSlide 0.4s ease-in-out;
     }
 
-    #name-prompt {
-      margin-top: 80px;
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    #result-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 400px;
+      background-color: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      padding: 24px;
       text-align: center;
+      z-index: 9999;
     }
 
-    #start-btn {
-      background-color: var(--green);
-      color: white;
-      border: none;
-      padding: 12px 25px;
-      font-weight: bold;
-      cursor: pointer;
+    #result-modal h2 {
+      margin-top: 0;
+    }
+
+    #result-modal pre {
+      text-align: left;
+      font-size: 1em;
+      background: #f2f2f7;
+      padding: 10px;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 9998;
+    }
+
+    canvas {
+      margin-top: 20px;
+      max-width: 100%;
     }
   </style>
 </head>
 <body>
+
   <div id="name-prompt">
     <h2>Введіть ваше ім’я, щоб розпочати тест</h2>
     <input type="text" id="username" placeholder="Ваше ім’я" />
-    <h3>Введіть ваш вік</h3>
+    <h3>Вік</h3>
     <input type="number" id="userage" placeholder="Ваш вік" />
-    <h3>Оберіть вашу стать</h3>
+    <h3>Стать</h3>
     <select id="usersex">
-      <option value="female">Жіноча</option>
-      <option value="male">Чоловіча</option>
+      <option value="masc">Чоловіча</option>
+      <option value="fem">Жіноча</option>
     </select>
+    <br>
     <button id="start-btn">Почати тест</button>
   </div>
 
@@ -134,12 +154,219 @@
     <div class="options" id="options-container"></div>
   </div>
 
-  <div id="result" style="display:none;"></div>
+  <div id="overlay"></div>
+  <div id="result-modal">
+    <h2>Ваші результати</h2>
+    <pre id="result-text"></pre>
+    <canvas id="result-chart"></canvas>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Підключення логіки питання, відповіді, персоналізація, та підказки через popover додаватиметься наступним кроком.
-    // Якщо готові, продовжимо розширювати функціонал і логіку.
+    // Full 70 questions with masculine/feminine text variants
+    const questions = [
+      {id:1, textMasc:"Мені подобається дізнаватися більше про себе", textFem:"Мені подобається дізнаватися більше про себе"},
+      {id:2, textMasc:"Я вмію грати на музичному інструменті", textFem:"Я вмію грати на музичному інструменті"},
+      {id:3, textMasc:"Найлегше вирішую проблеми, коли займаюся чимось фізичним", textFem:"Найлегше вирішую проблеми, коли займаюся чимось фізичним"},
+      {id:4, textMasc:"У мене часто в голові звучить пісня або музичний твір", textFem:"У мене часто в голові звучить пісня або музичний твір"},
+      {id:5, textMasc:"Мені легко планувати бюджет і керувати грошима", textFem:"Мені легко планувати бюджет і керувати грошима"},
+      {id:6, textMasc:"Мені легко вигадувати історії", textFem:"Мені легко вигадувати історії"},
+      {id:7, textMasc:"Я завжди мав/мала хорошу координацію", textFem:"Я завжди мала хорошу координацію"},
+      {id:8, textMasc:"Розмовляючи з кимось, я звертаю увагу не лише на сенс, а й на слова, які використовуються", textFem:"Розмовляючи з кимось, я звертаю увагу не лише на сенс, а й на слова, які використовуються"},
+      {id:9, textMasc:"Я люблю кросворди, пошук слів або інші словесні головоломки", textFem:"Я люблю кросворди, пошук слів або інші словесні головоломки"},
+      {id:10, textMasc:"Я не люблю неоднозначність, мені подобається ясність", textFem:"Я не люблю неоднозначність, мені подобається ясність"},
+      {id:11, textMasc:"Мені подобаються логічні головоломки, наприклад судоку", textFem:"Мені подобаються логічні головоломки, наприклад судоку"},
+      {id:12, textMasc:"Я люблю медитувати", textFem:"Я люблю медитувати"},
+      {id:13, textMasc:"Музика дуже важлива для мене", textFem:"Музика дуже важлива для мене"},
+      {id:14, textMasc:"Я переконливий/переконлива брехун/брехунка", textFem:"Я переконлива брехунка"},
+      {id:15, textMasc:"Я займаюся спортом або танцями", textFem:"Я займаюся спортом або танцями"},
+      {id:16, textMasc:"Мене дуже цікавлять психометричні тести (тести особистості) та тести IQ", textFem:"Мене дуже цікавлять психометричні тести (тести особистості) та тести IQ"},
+      {id:17, textMasc:"Мене дратують люди, які поводяться нераціонально", textFem:"Мене дратують люди, які поводяться нераціонально"},
+      {id:18, textMasc:"Музика, яка мені подобається, часто відповідає моєму емоційному стану", textFem:"Музика, яка мені подобається, часто відповідає моєму емоційному стану"},
+      {id:19, textMasc:"Я дуже товариська людина і люблю бути серед людей", textFem:"Я дуже товариська людина і люблю бути серед людей"},
+      {id:20, textMasc:"Я люблю діяти системно та ретельно", textFem:"Я люблю діяти системно та ретельно"},
+      {id:21, textMasc:"Мені легко розуміти графіки та діаграми", textFem:"Мені легко розуміти графіки та діаграми"},
+      {id:22, textMasc:"Я добре кидаю речі — дротики, камінці, фрізбі тощо", textFem:"Я добре кидаю речі — дротики, камінці, фрізбі тощо"},
+      {id:23, textMasc:"Мені легко запам’ятовувати цитати чи фрази", textFem:"Мені легко запам’ятовувати цитати чи фрази"},
+      {id:24, textMasc:"Я завжди впізнаю місця, де вже бував/була, навіть у дитинстві", textFem:"Я завжди впізнаю місця, де вже була, навіть у дитинстві"},
+      {id:25, textMasc:"Мені подобаються різні музичні стилі", textFem:"Мені подобаються різні музичні стилі"},
+      {id:26, textMasc:"Коли я зосереджений/зосереджена, я часто щось малюю або креслю", textFem:"Коли я зосереджена, я часто щось малюю або креслю"},
+      {id:27, textMasc:"Я міг/могла б маніпулювати людьми, якби захотів/захотіла", textFem:"Я могла б маніпулювати людьми, якби захотіла"},
+      {id:28, textMasc:"Я можу досить точно передбачити свої почуття та поведінку в певних ситуаціях", textFem:"Я можу досить точно передбачити свої почуття та поведінку в певних ситуаціях"},
+      {id:29, textMasc:"Мені легко робити усні обчислення", textFem:"Мені легко робити усні обчислення"},
+      {id:30, textMasc:"Я можу розпізнавати більшість звуків, не бачачи їх джерела", textFem:"Я можу розпізнавати більшість звуків, не бачачи їх джерела"},
+      {id:31, textMasc:"У школі одним із моїх улюблених предметів була англійська мова", textFem:"У школі одним із моїх улюблених предметів була англійська мова"},
+      {id:32, textMasc:"Мені подобається обдумувати проблему, зважуючи всі наслідки", textFem:"Мені подобається обдумувати проблему, зважуючи всі наслідки"},
+      {id:33, textMasc:"Я люблю дебати та обговорення", textFem:"Я люблю дебати та обговорення"},
+      {id:34, textMasc:"Я люблю екстремальні види спорту та страшні атракціони", textFem:"Я люблю екстремальні види спорту та страшні атракціони"},
+      {id:35, textMasc:"Мені більше подобаються індивідуальні види спорту", textFem:"Мені більше подобаються індивідуальні види спорту"},
+      {id:36, textMasc:"Мені не байдуже, як почуваються люди навколо мене", textFem:"Мені не байдуже, як почуваються люди навколо мене"},
+      {id:37, textMasc:"Мій дім повен фотографій та картин", textFem:"Мій дім повен фотографій та картин"},
+      {id:38, textMasc:"Я люблю щось майструвати — у мене вправні руки", textFem:"Я люблю щось майструвати — у мене вправні руки"},
+      {id:39, textMasc:"Мені подобається, коли музика звучить у фоновому режимі", textFem:"Мені подобається, коли музика звучить у фоновому режимі"},
+      {id:40, textMasc:"Я легко запам’ятовую телефонні номери", textFem:"Я легко запам’ятовую телефонні номери"},
+      {id:41, textMasc:"Я ставлю собі цілі та плани на майбутнє", textFem:"Я ставлю собі цілі та плани на майбутнє"},
+      {id:42, textMasc:"Я дуже тактильна людина", textFem:"Я дуже тактильна людина"},
+      {id:43, textMasc:"Я легко розумію, чи подобаюсь я комусь чи ні", textFem:"Я легко розумію, чи подобаюсь я комусь чи ні"},
+      {id:44, textMasc:"Я легко уявляю, як виглядає об’єкт з іншої точки зору", textFem:"Я легко уявляю, як виглядає об’єкт з іншої точки зору"},
+      {id:45, textMasc:"Я ніколи не використовую інструкції для збирання меблів", textFem:"Я ніколи не використовую інструкції для збирання меблів"},
+      {id:46, textMasc:"Мені легко спілкуватися з новими людьми", textFem:"Мені легко спілкуватися з новими людьми"},
+      {id:47, textMasc:"Щоб навчитися чомусь новому, мені потрібно просто почати це робити", textFem:"Щоб навчитися чомусь новому, мені потрібно просто почати це робити"},
+      {id:48, textMasc:"Я часто бачу чіткі образи, коли заплющую очі", textFem:"Я часто бачу чіткі образи, коли заплющую очі"},
+      {id:49, textMasc:"Я не використовую пальці, коли рахую", textFem:"Я не використовую пальці, коли рахую"},
+      {id:50, textMasc:"Я часто розмовляю сам/сама з собою — вголос або подумки", textFem:"Я часто розмовляю сама з собою — вголос або подумки"},
+      {id:51, textMasc:"У школі мені подобалися уроки музики", textFem:"У школі мені подобалися уроки музики"},
+      {id:52, textMasc:"За кордоном мені легко даються основи нової мови", textFem:"За кордоном мені легко даються основи нової мови"},
+      {id:53, textMasc:"Я люблю й мені легко даються ігри з м’ячем", textFem:"Я люблю й мені легко даються ігри з м’ячем"},
+      {id:54, textMasc:"Мій улюблений шкільний предмет — математика", textFem:"Мій улюблений шкільний предмет — математика"},
+      {id:55, textMasc:"Я завжди знаю, як себе почуваю", textFem:"Я завжди знаю, як себе почуваю"},
+      {id:56, textMasc:"Я реалістично оцінюю свої сильні та слабкі сторони", textFem:"Я реалістично оцінюю свої сильні та слабкі сторони"},
+      {id:57, textMasc:"Я веду щоденник", textFem:"Я веду щоденник"},
+      {id:58, textMasc:"Я дуже уважний/уважна до мови тіла інших людей", textFem:"Я дуже уважна до мови тіла інших людей"},
+      {id:59, textMasc:"Мій улюблений предмет у школі — мистецтво", textFem:"Мій улюблений предмет у школі — мистецтво"},
+      {id:60, textMasc:"Я отримую задоволення від читання", textFem:"Я отримую задоволення від читання"},
+      {id:61, textMasc:"Я легко читаю карти", textFem:"Я легко читаю карти"},
+      {id:62, textMasc:"Мені боляче бачити, як хтось плаче, і не мати змоги допомогти", textFem:"Мені боляче бачити, як хтось плаче, і не мати змоги допомогти"},
+      {id:63, textMasc:"Я добре вирішую конфлікти між іншими", textFem:"Я добре вирішую конфлікти між іншими"},
+      {id:64, textMasc:"Я люблю спорт і рухливі ігри", textFem:"Я люблю спорт і рухливі ігри"},
+      {id:65, textMasc:"Я маю хорошу пам’ять на факти", textFem:"Я маю хорошу пам’ять на факти"},
+      {id:66, textMasc:"Я схильний/схильна аналізувати свої емоції", textFem:"Я схильна аналізувати свої емоції"},
+      {id:67, textMasc:"Мені подобається малювати або створювати щось візуальне", textFem:"Мені подобається малювати або створювати щось візуальне"},
+      {id:68, textMasc:"Я добре розумію почуття інших", textFem:"Я добре розумію почуття інших"},
+      {id:69, textMasc:"Мені легко швидко читати", textFem:"Мені легко швидко читати"},
+      {id:70, textMasc:"Я люблю ігри на логіку", textFem:"Я люблю ігри на логіку"}
+    ];
+
+    // Answers text variants by sex
+    const answersText = {
+      masc: ["Ніколи", "Іноді", "Часто", "Завжди"],
+      fem:  ["Ніколи", "Іноді", "Часто", "Завжди"]
+    };
+
+    // Categories with question IDs belonging to each
+    const categories = {
+      "Лінгвістичний": [1,6,8,9,23,31,33,40,50,52,57,60,65,69],
+      "Логіко-математичний": [5,10,11,16,17,20,29,32,54,70],
+      "Музичний": [2,4,13,18,25,30,39,51],
+      "Тіло-кінетичний": [3,7,15,22,34,35,38,42,53,64],
+      "Візуально-просторовий": [21,24,26,37,44,45,48,61,67],
+      "Міжособистісний": [14,19,27,36,43,46,58,62,63,68],
+      "Внутрішньоособистісний": [12,28,41,47,49,55,56,66]
+    };
+
+    // Colors for categories pie chart
+    const categoryColors = {
+      "Лінгвістичний": "#ff9500",
+      "Логіко-математичний": "#5856d6",
+      "Музичний": "#ff2d55",
+      "Тіло-кінетичний": "#34c759",
+      "Візуально-просторовий": "#5ac8fa",
+      "Міжособистісний": "#ffcc00",
+      "Внутрішньоособистісний": "#af52de"
+    };
+
+    let username = "", userage = 0, usersex = "masc", currentQuestionIndex = 0;
+    let scores = {};
+
+    const startBtn = document.getElementById("start-btn");
+    const namePromptDiv = document.getElementById("name-prompt");
+    const quizContainer = document.getElementById("quiz-container");
+    const questionNumberDiv = document.getElementById("question-number");
+    const questionTextDiv = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+    const resultModal = document.getElementById("result-modal");
+    const resultText = document.getElementById("result-text");
+    const overlay = document.getElementById("overlay");
+    const chartCanvas = document.getElementById("result-chart");
+    let chartInstance = null;
+
+    startBtn.addEventListener("click", () => {
+      username = document.getElementById("username").value.trim();
+      userage = parseInt(document.getElementById("userage").value);
+      usersex = document.getElementById("usersex").value;
+
+      if (!username) return alert("Будь ласка, введіть ім’я.");
+      if (!userage || userage <= 0) return alert("Будь ласка, введіть вік.");
+
+      namePromptDiv.style.display = "none";
+      quizContainer.style.display = "block";
+      currentQuestionIndex = 0;
+      scores = {};
+      Object.keys(categories).forEach(cat => scores[cat] = 0);
+      showQuestion();
+    });
+
+    function showQuestion() {
+      if (currentQuestionIndex >= questions.length) return showResults();
+
+      const q = questions[currentQuestionIndex];
+      questionNumberDiv.textContent = `Питання ${currentQuestionIndex + 1} з ${questions.length}`;
+      questionTextDiv.textContent = usersex === "fem" ? q.textFem : q.textMasc;
+      optionsContainer.innerHTML = "";
+
+      for (let i = 1; i <= 4; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = answersText[usersex][i-1];
+        btn.className = `btn-${i}`;
+        btn.addEventListener("click", () => answerQuestion(i));
+        optionsContainer.appendChild(btn);
+      }
+    }
+
+    function answerQuestion(score) {
+      const qid = questions[currentQuestionIndex].id;
+      for (const [cat, qids] of Object.entries(categories)) {
+        if (qids.includes(qid)) scores[cat] += score;
+      }
+      currentQuestionIndex++;
+      quizContainer.style.animation = "fadeSlide 0.4s ease-in-out";
+      setTimeout(showQuestion, 100);
+    }
+
+    function showResults() {
+      quizContainer.style.display = "none";
+      overlay.style.display = "block";
+      resultModal.style.display = "block";
+
+      const sortedResults = Object.entries(scores).sort((a,b) => b[1] - a[1]);
+      let resultString = `Ім’я: ${username}\nВік: ${userage}\n\n`;
+
+      sortedResults.forEach(([cat, score]) => resultString += `${cat}: ${score}\n`);
+      resultText.textContent = resultString;
+
+      const labels = sortedResults.map(e => e[0]);
+      const dataValues = sortedResults.map(e => e[1]);
+      const colors = sortedResults.map(e => categoryColors[e[0]]);
+
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(chartCanvas, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: dataValues,
+            backgroundColor: colors,
+            borderColor: '#fff',
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 14 } } },
+            tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed}` } }
+          }
+        }
+      });
+    }
+
+    // Clicking outside modal closes results
+    overlay.addEventListener('click', () => {
+      overlay.style.display = "none";
+      resultModal.style.display = "none";
+      // Reset test to start screen:
+      namePromptDiv.style.display = "block";
+    });
   </script>
 </body>
 </html>
