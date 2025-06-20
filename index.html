@@ -85,6 +85,14 @@
       to { opacity: 1; transform: translateX(0); }
     }
 
+    #timer {
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #007aff;
+      margin-bottom: 10px;
+      user-select: none;
+    }
+
     #result-modal {
       display: none;
       position: fixed;
@@ -130,6 +138,23 @@
       margin-top: 20px;
       max-width: 100%;
     }
+
+    #export-btn {
+      margin-top: 15px;
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      padding: 12px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    #export-btn:hover {
+      background-color: #005bb5;
+    }
   </style>
 </head>
 <body>
@@ -144,11 +169,12 @@
       <option value="masc">Чоловіча</option>
       <option value="fem">Жіноча</option>
     </select>
-    <br>
+    <br />
     <button id="start-btn">Почати тест</button>
   </div>
 
   <div id="quiz-container" style="display:none;">
+    <div id="timer">Час: 30 с</div>
     <div id="question-number"></div>
     <div id="question-text" class="question"></div>
     <div class="options" id="options-container"></div>
@@ -159,11 +185,16 @@
     <h2>Ваші результати</h2>
     <pre id="result-text"></pre>
     <canvas id="result-chart"></canvas>
+    <button id="export-btn">Експортувати результати у PDF</button>
   </div>
 
+  <!-- External libs for Chart.js and jsPDF -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <script>
-    // Full 70 questions with masculine/feminine text variants
+    const { jsPDF } = window.jspdf;
+
     const questions = [
       {id:1, textMasc:"Мені подобається дізнаватися більше про себе", textFem:"Мені подобається дізнаватися більше про себе"},
       {id:2, textMasc:"Я вмію грати на музичному інструменті", textFem:"Я вмію грати на музичному інструменті"},
@@ -221,40 +252,32 @@
       {id:54, textMasc:"Мій улюблений шкільний предмет — математика", textFem:"Мій улюблений шкільний предмет — математика"},
       {id:55, textMasc:"Я завжди знаю, як себе почуваю", textFem:"Я завжди знаю, як себе почуваю"},
       {id:56, textMasc:"Я реалістично оцінюю свої сильні та слабкі сторони", textFem:"Я реалістично оцінюю свої сильні та слабкі сторони"},
-      {id:57, textMasc:"Я веду щоденник", textFem:"Я веду щоденник"},
-      {id:58, textMasc:"Я дуже уважний/уважна до мови тіла інших людей", textFem:"Я дуже уважна до мови тіла інших людей"},
-      {id:59, textMasc:"Мій улюблений предмет у школі — мистецтво", textFem:"Мій улюблений предмет у школі — мистецтво"},
-      {id:60, textMasc:"Я отримую задоволення від читання", textFem:"Я отримую задоволення від читання"},
-      {id:61, textMasc:"Я легко читаю карти", textFem:"Я легко читаю карти"},
-      {id:62, textMasc:"Мені боляче бачити, як хтось плаче, і не мати змоги допомогти", textFem:"Мені боляче бачити, як хтось плаче, і не мати змоги допомогти"},
-      {id:63, textMasc:"Я добре вирішую конфлікти між іншими", textFem:"Я добре вирішую конфлікти між іншими"},
-      {id:64, textMasc:"Я люблю спорт і рухливі ігри", textFem:"Я люблю спорт і рухливі ігри"},
-      {id:65, textMasc:"Я маю хорошу пам’ять на факти", textFem:"Я маю хорошу пам’ять на факти"},
-      {id:66, textMasc:"Я схильний/схильна аналізувати свої емоції", textFem:"Я схильна аналізувати свої емоції"},
-      {id:67, textMasc:"Мені подобається малювати або створювати щось візуальне", textFem:"Мені подобається малювати або створювати щось візуальне"},
-      {id:68, textMasc:"Я добре розумію почуття інших", textFem:"Я добре розумію почуття інших"},
-      {id:69, textMasc:"Мені легко швидко читати", textFem:"Мені легко швидко читати"},
-      {id:70, textMasc:"Я люблю ігри на логіку", textFem:"Я люблю ігри на логіку"}
+      {id:57, textMasc:"Я веду щоденник або блог", textFem:"Я веду щоденник або блог"},
+      {id:58, textMasc:"Я люблю спілкуватися з іншими людьми", textFem:"Я люблю спілкуватися з іншими людьми"},
+      {id:59, textMasc:"Я люблю спорт і рухливі ігри", textFem:"Я люблю спорт і рухливі ігри"},
+      {id:60, textMasc:"Я маю хорошу пам’ять на факти", textFem:"Я маю хорошу пам’ять на факти"},
+      {id:61, textMasc:"Я схильний/схильна аналізувати свої емоції", textFem:"Я схильна аналізувати свої емоції"},
+      {id:62, textMasc:"Мені подобається малювати або створювати щось візуальне", textFem:"Мені подобається малювати або створювати щось візуальне"},
+      {id:63, textMasc:"Я добре розумію почуття інших", textFem:"Я добре розумію почуття інших"},
+      {id:64, textMasc:"Мені легко швидко читати", textFem:"Мені легко швидко читати"},
+      {id:65, textMasc:"Я люблю ігри на логіку", textFem:"Я люблю ігри на логіку"}
     ];
 
-    // Answers text variants by sex
     const answersText = {
       masc: ["Ніколи", "Іноді", "Часто", "Завжди"],
       fem:  ["Ніколи", "Іноді", "Часто", "Завжди"]
     };
 
-    // Categories with question IDs belonging to each
     const categories = {
-      "Лінгвістичний": [1,6,8,9,23,31,33,40,50,52,57,60,65,69],
-      "Логіко-математичний": [5,10,11,16,17,20,29,32,54,70],
+      "Лінгвістичний": [1,6,8,9,23,31,33,40,50,52,57,60,65,64],
+      "Логіко-математичний": [5,10,11,16,17,20,29,32,54,65],
       "Музичний": [2,4,13,18,25,30,39,51],
-      "Тіло-кінетичний": [3,7,15,22,34,35,38,42,53,64],
-      "Візуально-просторовий": [21,24,26,37,44,45,48,61,67],
-      "Міжособистісний": [14,19,27,36,43,46,58,62,63,68],
-      "Внутрішньоособистісний": [12,28,41,47,49,55,56,66]
+      "Тіло-кінетичний": [3,7,15,22,34,35,38,42,53,59],
+      "Візуально-просторовий": [21,24,26,37,44,45,48,62],
+      "Міжособистісний": [14,19,27,36,43,46,58,63],
+      "Внутрішньоособистісний": [12,28,41,47,49,55,56,61]
     };
 
-    // Colors for categories pie chart
     const categoryColors = {
       "Лінгвістичний": "#ff9500",
       "Логіко-математичний": "#5856d6",
@@ -267,6 +290,8 @@
 
     let username = "", userage = 0, usersex = "masc", currentQuestionIndex = 0;
     let scores = {};
+    let timer = 30;
+    let timerInterval = null;
 
     const startBtn = document.getElementById("start-btn");
     const namePromptDiv = document.getElementById("name-prompt");
@@ -274,10 +299,12 @@
     const questionNumberDiv = document.getElementById("question-number");
     const questionTextDiv = document.getElementById("question-text");
     const optionsContainer = document.getElementById("options-container");
+    const timerDiv = document.getElementById("timer");
     const resultModal = document.getElementById("result-modal");
     const resultText = document.getElementById("result-text");
     const overlay = document.getElementById("overlay");
     const chartCanvas = document.getElementById("result-chart");
+    const exportBtn = document.getElementById("export-btn");
     let chartInstance = null;
 
     startBtn.addEventListener("click", () => {
@@ -293,8 +320,29 @@
       currentQuestionIndex = 0;
       scores = {};
       Object.keys(categories).forEach(cat => scores[cat] = 0);
+      startTimer();
       showQuestion();
     });
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timer = 30;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timer--;
+        updateTimerDisplay();
+        if (timer <= 0) {
+          clearInterval(timerInterval);
+          answerQuestion(0);  // no points if timed out
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      timerDiv.textContent = `Час: ${timer} с`;
+      if (timer <= 5) timerDiv.style.color = "#ff3b30";
+      else timerDiv.style.color = "#007aff";
+    }
 
     function showQuestion() {
       if (currentQuestionIndex >= questions.length) return showResults();
@@ -311,16 +359,18 @@
         btn.addEventListener("click", () => answerQuestion(i));
         optionsContainer.appendChild(btn);
       }
+      startTimer();
     }
 
     function answerQuestion(score) {
+      clearInterval(timerInterval);
       const qid = questions[currentQuestionIndex].id;
       for (const [cat, qids] of Object.entries(categories)) {
         if (qids.includes(qid)) scores[cat] += score;
       }
       currentQuestionIndex++;
       quizContainer.style.animation = "fadeSlide 0.4s ease-in-out";
-      setTimeout(showQuestion, 100);
+      setTimeout(showQuestion, 300);
     }
 
     function showResults() {
@@ -364,8 +414,43 @@
     overlay.addEventListener('click', () => {
       overlay.style.display = "none";
       resultModal.style.display = "none";
-      // Reset test to start screen:
       namePromptDiv.style.display = "block";
+    });
+
+    // Export to PDF
+    exportBtn.addEventListener("click", () => {
+      const doc = new jsPDF();
+
+      const margin = 10;
+      const lineHeight = 10;
+      let y = margin;
+
+      doc.setFontSize(18);
+      doc.text("Результати тесту на множинні інтелекти", margin, y);
+      y += 15;
+
+      doc.setFontSize(12);
+      doc.text(`Ім’я: ${username}`, margin, y);
+      y += lineHeight;
+      doc.text(`Вік: ${userage}`, margin, y);
+      y += lineHeight;
+
+      doc.text("Оцінки:", margin, y);
+      y += lineHeight;
+
+      const sortedResults = Object.entries(scores).sort((a,b) => b[1] - a[1]);
+      sortedResults.forEach(([cat, score]) => {
+        doc.text(`${cat}: ${score}`, margin + 5, y);
+        y += lineHeight;
+      });
+
+      y += 10;
+
+      // Add chart image
+      const chartDataUrl = chartCanvas.toDataURL("image/png", 1.0);
+      doc.addImage(chartDataUrl, 'PNG', margin, y, 180, 90);
+
+      doc.save(`${username}_multiple_intelligences_results.pdf`);
     });
   </script>
 </body>
