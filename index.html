@@ -342,59 +342,72 @@
     return null;
   }
 
-  function showQuestion(index, questions) {
-    questionsContainer.innerHTML = "";
-    if (index >= questions.length) {
-      finishTest();
-      return;
-    }
-
-    const qNum = ageUnder16 ? questionIndexesUnder16[index] + 1 : index + 1;
-    const category = mapQuestionToCategory(qNum);
-
-    const questionDiv = document.createElement("div");
-    questionDiv.textContent = `Питання ${index + 1} (${category}): ${questions[index]}`;
-    questionsContainer.appendChild(questionDiv);
-
-    // Варіанти відповіді 1-4, як бали, користувач клікає по них
-    for (let i = 1; i <= 4; i++) {
-      const option = document.createElement("div");
-      option.textContent = i;
-      option.className = "option";
-      option.tabIndex = 0;
-      option.setAttribute("role", "button");
-      option.setAttribute("aria-pressed", "false");
-
-      option.onclick = () => {
-        scores[category] += i;
-        clearInterval(timerInterval);
-        currentQuestionIndex++;
-        timerRemaining = timerDuration;
-        showQuestion(currentQuestionIndex, questions);
-      };
-      option.onkeypress = (e) => {
-        if (e.key === "Enter" || e.key === " ") option.click();
-      };
-
-      questionsContainer.appendChild(option);
-    }
-
-    // Таймер
-    timerRemaining = timerDuration;
-    timerEl.textContent = `Час на питання: ${timerRemaining} сек.`;
-
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      timerRemaining--;
-      timerEl.textContent = `Час на питання: ${timerRemaining} сек.`;
-      if (timerRemaining <= 0) {
-        // Якщо час вийшов, рахуємо 0 балів (пропускаємо питання)
-        clearInterval(timerInterval);
-        currentQuestionIndex++;
-        showQuestion(currentQuestionIndex, questions);
-      }
-    }, 1000);
+function showQuestion(index, questions) {
+  questionsContainer.innerHTML = "";
+  if (index >= questions.length) {
+    finishTest();
+    return;
   }
+
+  const qNum = ageUnder16 ? questionIndexesUnder16[index] + 1 : index + 1;
+  const category = mapQuestionToCategory(qNum);
+
+  const questionDiv = document.createElement("div");
+  questionDiv.textContent = `Питання ${index + 1} (${category}): ${questions[index]}`;
+  questionsContainer.appendChild(questionDiv);
+
+  // Варіанти відповіді 1-4, як бали, користувач клікає по них
+  for (let i = 1; i <= 4; i++) {
+    const option = document.createElement("div");
+    option.textContent = i;
+    option.className = "option";
+    option.tabIndex = 0;
+    option.setAttribute("role", "button");
+    option.setAttribute("aria-pressed", "false");
+
+    option.onclick = () => {
+      scores[category] += i;
+      clearInterval(timerInterval);
+      currentQuestionIndex++;
+      timerRemaining = timerDuration;
+      showQuestion(currentQuestionIndex, questions);
+    };
+    option.onkeypress = (e) => {
+      if (e.key === "Enter" || e.key === " ") option.click();
+    };
+
+    questionsContainer.appendChild(option);
+  }
+
+  // Додаємо текст з поясненнями після варіантів
+  const explanation = document.createElement("div");
+  explanation.style.marginTop = "1rem";
+  explanation.style.fontWeight = "500";
+  explanation.style.fontSize = "0.9rem";
+  explanation.style.color = "#333";
+  explanation.innerHTML = `
+    1 = Переважно не згоден,<br>
+    2 = Частково не згоден,<br>
+    3 = Частково згоден,<br>
+    4 = Переважно згоден
+  `;
+  questionsContainer.appendChild(explanation);
+
+  // Таймер
+  timerRemaining = timerDuration;
+  timerEl.textContent = `Час на питання: ${timerRemaining} сек.`;
+
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timerRemaining--;
+    timerEl.textContent = `Час на питання: ${timerRemaining} сек.`;
+    if (timerRemaining <= 0) {
+      clearInterval(timerInterval);
+      currentQuestionIndex++;
+      showQuestion(currentQuestionIndex, questions);
+    }
+  }, 1000);
+}
 
   miForm.onsubmit = function (e) {
     e.preventDefault();
