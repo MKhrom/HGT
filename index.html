@@ -20,7 +20,7 @@
       font-weight: 600;
       text-align: center;
     }
-    label {
+    #miForm label, #questionsContainer div {
       display: block;
       margin-top: 1rem;
       font-weight: 600;
@@ -36,7 +36,7 @@
       font-size: 1rem;
       box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.05);
     }
-    button, .option {
+    button {
       background-color: #007aff;
       color: #fff;
       padding: 0.75rem 1.5rem;
@@ -48,19 +48,38 @@
       width: 100%;
       box-shadow: 0 2px 6px rgba(0, 122, 255, 0.3);
       transition: background-color 0.3s ease;
-      user-select: none;
-      text-align: center;
     }
-    button:hover, .option:hover {
+    button:hover:not(:disabled) {
       background-color: #0051a8;
     }
-    .option {
+    button:disabled {
+      background-color: #a0a0a0;
+      cursor: not-allowed;
+    }
+    #questionsContainer {
       margin-top: 1rem;
+      border-radius: 20px;
+      background-color: #fff;
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      user-select: none;
+    }
+    #questionsContainer > div {
+      margin-bottom: 1rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .option {
+      display: block;
       background-color: #f9f9f9;
-      color: #000;
-      box-shadow: none;
       border: 1px solid #e5e5ea;
       border-radius: 12px;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      user-select: none;
     }
     .option:hover {
       background-color: #007aff;
@@ -71,19 +90,8 @@
       font-weight: bold;
       color: #ff3b30;
       margin-top: 1rem;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       text-align: center;
-    }
-    #questionsContainer {
-      margin-top: 1.5rem;
-      background-color: #ffffff;
-      border-radius: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      padding: 1rem;
-      min-height: 140px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
     }
     canvas {
       margin-top: 2rem;
@@ -91,26 +99,41 @@
       border-radius: 20px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       max-width: 100%;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
     #resultsInfo {
-      margin-top: 1rem;
-      background: #f0f0f5;
-      border-radius: 16px;
+      margin-top: 2rem;
+      background: #fefefe;
+      border-radius: 20px;
       padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    #resultsInfo h3 {
+      margin-top: 1rem;
+      margin-bottom: 0.3rem;
+      color: #007aff;
+    }
+    #resultsInfo p {
+      margin: 0.2rem 0;
       font-size: 0.9rem;
-      line-height: 1.4;
-      max-height: 400px;
-      overflow-y: auto;
+      line-height: 1.3;
     }
     @media (max-width: 480px) {
       h1 {
         font-size: 1.25rem;
       }
-      label, input, select, button, .option {
+      #miForm label, #questionsContainer div, button, .option {
         font-size: 1rem;
       }
     }
   </style>
+
+  <!-- Бібліотеки для PDF генерації -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
   <h1>Множинні інтелекти за Гарднером — опис, уподобання, особистий потенціал, пов’язані завдання та тести</h1>
@@ -132,309 +155,390 @@
   </form>
 
   <div id="timer"></div>
-  <div id="questionsContainer" style="display:none"></div>
+  <div id="questionsContainer" style="display:none;"></div>
 
-  <canvas id="resultChart" style="display:none"></canvas>
-  <button id="downloadBtn" style="display:none">Завантажити графік</button>
-
+  <canvas id="resultChart" style="display:none;"></canvas>
   <div id="resultsInfo"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    const allQuestions = [
-      "Мені подобається дізнаватися більше про себе",
-      "Я вмію грати на музичному інструменті",
-      "Найлегше вирішую проблеми, коли займаюся чимось фізичним",
-      "У мене часто в голові звучить пісня або музичний твір",
-      "Мені легко планувати бюджет і керувати грошима",
-      "Мені легко вигадувати історії",
-      "Я завжди мав/мала хорошу координацію",
-      "Розмовляючи з кимось, я звертаю увагу не лише на сенс, а й на слова, які використовуються",
-      "Я люблю кросворди, пошук слів або інші словесні головоломки",
-      "Я не люблю неоднозначність, мені подобається ясність",
-      "Мені подобаються логічні головоломки, наприклад судоку",
-      "Я люблю медитувати",
-      "Музика дуже важлива для мене",
-      "Я переконливий/переконлива брехун/брехунка",
-      "Я займаюся спортом або танцями",
-      "Мене дуже цікавлять психометричні тести (тести особистості) та тести IQ",
-      "Мене дратують люди, які поводяться нераціонально",
-      "Музика, яка мені подобається, часто відповідає моєму емоційному стану",
-      "Я дуже товариська людина і люблю бути серед людей",
-      "Я люблю діяти системно та ретельно",
-      "Мені легко розуміти графіки та діаграми",
-      "Я добре кидаю речі — дротики, камінці, фрізбі тощо",
-      "Мені легко запам’ятовувати цитати чи фрази",
-      "Я завжди впізнаю місця, де вже бував/була, навіть у дитинстві",
-      "Мені подобаються різні музичні стилі",
-      "Коли я зосереджений/зосереджена, я часто щось малюю або креслю",
-      "Я міг/могла б маніпулювати людьми, якби захотів/захотіла",
-      "Я можу досить точно передбачити свої почуття та поведінку в певних ситуаціях",
-      "Мені легко робити усні обчислення",
-      "Я можу розпізнавати більшість звуків, не бачачи їх джерела",
-      "У школі одним із моїх улюблених предметів була англійська мова",
-      "Мені подобається обдумувати проблему, зважуючи всі наслідки",
-      "Я люблю дебати та обговорення",
-      "Я люблю екстремальні види спорту та страшні атракціони",
-      "Мені більше подобаються індивідуальні види спорту",
-      "Мені не байдуже, як почуваються люди навколо мене",
-      "Мій дім повен фотографій та картин",
-      "Я люблю щось майструвати — у мене вправні руки",
-      "Мені подобається, коли музика звучить у фоновому режимі",
-      "Я легко запам’ятовую телефонні номери",
-      "Я ставлю собі цілі та плани на майбутнє",
-      "Я дуже тактильна людина",
-      "Я легко розумію, чи подобаюсь я комусь чи ні",
-      "Я легко уявляю, як виглядає об’єкт з іншої точки зору",
-      "Я ніколи не використовую інструкції для збирання меблів",
-      "Мені легко спілкуватися з новими людьми",
-      "Щоб навчитися чомусь новому, мені потрібно просто почати це робити",
-      "Я часто бачу чіткі образи, коли заплющую очі",
-      "Я не використовую пальці, коли рахую",
-      "Я часто розмовляю сам/сама з собою — вголос або подумки",
-      "У школі мені подобалися уроки музики",
-      "За кордоном мені легко даються основи нової мови",
-      "Я люблю й мені легко даються ігри з м’ячем",
-      "Мій улюблений шкільний предмет — математика",
-      "Я завжди знаю, як себе почуваю",
-      "Я реалістично оцінюю свої сильні та слабкі сторони",
-      "Я веду щоденник",
-      "Я дуже уважний/уважна до мови тіла інших людей",
-      "Мій улюблений предмет у школі — мистецтво",
-      "Я отримую задоволення від читання",
-      "Я легко читаю карти",
-      "Мені боляче бачити, як хтось плаче, і не мати змоги допомогти",
-      "Я добре вирішую конфлікти між іншими",
-      "Я завжди мріяв/мріяла стати музикантом або співаком/співачкою",
-      "Я надаю перевагу командним видам спорту",
-      "Спів робить мене щасливим/щасливою",
-      "Я ніколи не гублюся, навіть у незнайомому місці",
-      "Коли я навчаюсь чомусь новому, мені подобається бачити схеми й малюнки",
-      "Мені комфортно проводити час наодинці",
-      "Друзі часто звертаються до мене за емоційною підтримкою та порадою"
-    ];
+  <button id="downloadResultsBtn" style="display:none; margin-top:1rem;">Завантажити результати (PDF / PNG)</button>
 
-    // Питання для віку <16: (номери -1 бо масив з 0)
-    const questionIndexesUnder16 = [
-      1, 3, 5, 6, 12, 13, 14, 18, 20, 22, 23, 25, 28, 30, 31, 33, 34, 39, 40, 42, 46, 47, 48, 50, 52, 53, 54, 56, 58, 59, 61, 64, 65, 68, 69
-    ];
+<script>
+  // Запитання українською, індекси від 0
+  const allQuestions = [
+    "Мені подобається дізнаватися більше про себе",
+    "Я вмію грати на музичному інструменті",
+    "Найлегше вирішую проблеми, коли займаюся чимось фізичним",
+    "У мене часто в голові звучить пісня або музичний твір",
+    "Мені легко планувати бюджет і керувати грошима",
+    "Мені легко вигадувати історії",
+    "Я завжди мав/мала хорошу координацію",
+    "Розмовляючи з кимось, я звертаю увагу не лише на сенс, а й на слова, які використовуються",
+    "Я люблю кросворди, пошук слів або інші словесні головоломки",
+    "Я не люблю неоднозначність, мені подобається ясність",
+    "Мені подобаються логічні головоломки, наприклад судоку",
+    "Я люблю медитувати",
+    "Музика дуже важлива для мене",
+    "Я переконливий/переконлива брехун/брехунка",
+    "Я займаюся спортом або танцями",
+    "Мене дуже цікавлять психометричні тести (тести особистості) та тести IQ",
+    "Мене дратують люди, які поводяться нераціонально",
+    "Музика, яка мені подобається, часто відповідає моєму емоційному стану",
+    "Я дуже товариська людина і люблю бути серед людей",
+    "Я люблю діяти системно та ретельно",
+    "Мені легко розуміти графіки та діаграми",
+    "Я добре кидаю речі — дротики, камінці, фрізбі тощо",
+    "Мені легко запам’ятовувати цитати чи фрази",
+    "Я завжди впізнаю місця, де вже бував/була, навіть у дитинстві",
+    "Мені подобаються різні музичні стилі",
+    "Коли я зосереджений/зосереджена, я часто щось малюю або креслю",
+    "Я міг/могла б маніпулювати людьми, якби захотів/захотіла",
+    "Я можу досить точно передбачити свої почуття та поведінку в певних ситуаціях",
+    "Мені легко робити усні обчислення",
+    "Я можу розпізнавати більшість звуків, не бачачи їх джерела",
+    "У школі одним із моїх улюблених предметів була англійська мова",
+    "Мені подобається обдумувати проблему, зважуючи всі наслідки",
+    "Я люблю дебати та обговорення",
+    "Я люблю екстремальні види спорту та страшні атракціони",
+    "Мені більше подобаються індивідуальні види спорту",
+    "Мені не байдуже, як почуваються люди навколо мене",
+    "Мій дім повен фотографій та картин",
+    "Я люблю щось майструвати — у мене вправні руки",
+    "Мені подобається, коли музика звучить у фоновому режимі",
+    "Я легко запам’ятовую телефонні номери",
+    "Я ставлю собі цілі та плани на майбутнє",
+    "Я дуже тактильна людина",
+    "Я легко розумію, чи подобаюсь я комусь чи ні",
+    "Я легко уявляю, як виглядає об’єкт з іншої точки зору",
+    "Я ніколи не використовую інструкції для збирання меблів",
+    "Мені легко спілкуватися з новими людьми",
+    "Щоб навчитися чомусь новому, мені потрібно просто почати це робити",
+    "Я часто бачу чіткі образи, коли заплющую очі",
+    "Я не використовую пальці, коли рахую",
+    "Я часто розмовляю сам/сама з собою — вголос або подумки",
+    "У школі мені подобалися уроки музики",
+    "За кордоном мені легко даються основи нової мови",
+    "Я люблю й мені легко даються ігри з м’ячем",
+    "Мій улюблений шкільний предмет — математика",
+    "Я завжди знаю, як себе почуваю",
+    "Я реалістично оцінюю свої сильні та слабкі сторони",
+    "Я веду щоденник",
+    "Я дуже уважний/уважна до мови тіла інших людей",
+    "Мій улюблений предмет у школі — мистецтво",
+    "Я отримую задоволення від читання",
+    "Я легко читаю карти",
+    "Мені боляче бачити, як хтось плаче, і не мати змоги допомогти",
+    "Я добре вирішую конфлікти між іншими",
+    "Я завжди мріяв/мріяла стати музикантом або співаком/співачкою",
+    "Я надаю перевагу командним видам спорту",
+    "Спів робить мене щасливим/щасливою",
+    "Я ніколи не гублюся, навіть у незнайомому місці",
+    "Коли я навчаюсь чомусь новому, мені подобається бачити схеми й малюнки",
+    "Мені комфортно проводити час наодинці",
+    "Друзі часто звертаються до мене за емоційною підтримкою та порадою"
+  ];
 
-    const categories = {
-      "Мовний (лінгвістичний)": [6, 8, 9, 14, 23, 31, 33, 50, 52, 60],
-      "Логіко-математичний": [5, 10, 11, 17, 20, 29, 32, 40, 49, 54],
-      "Музичний": [2, 4, 13, 18, 25, 30, 39, 51, 64, 66],
-      "Тілесно-кінестетичний": [3, 7, 15, 22, 34, 38, 42, 45, 47, 53],
-      "Просторово-візуальний": [21, 24, 26, 37, 44, 48, 59, 61, 67, 68],
-      "Міжособистісний": [19, 27, 36, 43, 46, 58, 62, 63, 65, 70],
-      "Внутрішньоособистісний": [1, 12, 16, 28, 35, 41, 55, 56, 57, 69]
-    };
+  // Індекси питань, які бачать користувачі молодші 16 років (1-based у умові, тут 0-based)
+  const questionIndexesUnder16 = [
+    1,3,5,6,12,13,14,18,20,22,23,25,28,30,31,33,34,39,40,42,46,47,48,50,52,53,54,56,58,59,61,64,65,68,69
+  ];
 
-    // Інформація для виводу після результатів
-    const categoriesInfo = {
-      "Мовний (лінгвістичний)": {
-        description: "Слова та мова, писемна і усна; запам’ятовування, інтерпретація та пояснення ідей і інформації через мову, розуміння зв’язку між спілкуванням і значенням.",
-        roles: "Письменники, юристи, журналісти, оратори, тренери, копірайтери, викладачі англійської мови, поети, редактори, лінгвісти, перекладачі, PR-консультанти, медіа-консультанти, телеведучі та радіоведучі, диктори.",
-        activities: "Написати набір інструкцій; виступити з промовою на тему; редагувати написаний текст або роботу; написати промову; коментувати подію; застосувати позитивне або негативне трактування до історії.",
-        learning: "Слова та мова."
-      },
-      "Логіко-математичний": {
-        description: "Логічне мислення, виявлення закономірностей, наукове мислення та дедукція; аналіз проблем, виконання математичних обчислень, розуміння зв’язку між причиною і наслідком для досягнення конкретного результату.",
-        roles: "Науковці, інженери, комп’ютерні фахівці, бухгалтери, статистики, дослідники, аналітики, торговці, банкіри, букмекери, страхові брокери, переговорники, укладачі угод, фахівці з вирішення проблем, директори.",
-        activities: "Виконати усні арифметичні обчислення; створити процес для вимірювання чогось складного; проаналізувати, як працює машина; розробити процес; розробити стратегію для досягнення мети; оцінити вартість бізнесу або пропозиції.",
-        learning: "Числа та логіка."
-      },
-      "Музичний": {
-        description: "Музичні здібності, усвідомлення, сприйняття та використання звуків; розпізнавання тональних і ритмічних візерунків, розуміння зв’язку між звуком і почуттям.",
-        roles: "Музиканти, співаки, композитори, діджеї, музичні продюсери, настройники піаніно, акустичні інженери, артисти, організатори свят, консультанти з навколишнього середовища та шуму, вокальні тренери.",
-        activities: "Виконувати музичний твір; співати пісню; рецензувати музичну роботу; навчати когось грати на музичному інструменті; підбирати фонову музику для телефонних систем і приймалень.",
-        learning: "Музика, звуки, ритм."
-      },
-      "Тілесно-кінестетичний": {
-        description: "Контроль рухів тіла, мануальна спритність, фізична гнучкість і рівновага; координація очей і тіла.",
-        roles: "Танцюристи, демонстратори, актори, спортсмени, дайвери, військові, пожежники, інструктори з фізичної підготовки, артисти виконавці; ергономісти, остеопати, рибалки, водії, ремісники; садівники, кухарі, акупунктуристи, цілителі, авантюристи.",
-        activities: "Жонглювати; демонструвати спортивну техніку; кидати підставку для пива; створювати мімічний виступ для пояснення чогось; підкидати млинець; запускати повітряного змія; навчати правильної робочої постави, оцінювати ергономіку робочого місця.",
-        learning: "Фізичний досвід і рух, дотик і відчуття."
-      },
-      "Просторово-візуальний": {
-        description: "Візуальне та просторове сприйняття; інтерпретація та створення візуальних образів; образне уявлення та вираження; розуміння зв’язку між образами і значеннями, а також між простором і ефектом.",
-        roles: "Художники, дизайнери, мультиплікатори, сценаристи, архітектори, фотографи, скульптори, містобудівники, візіонери, винахідники, інженери, консультанти з косметики та краси.",
-        activities: "Спроектувати костюм; інтерпретувати картину; створити план кімнати; розробити корпоративний логотип; спроектувати будівлю; упакувати валізу або багажник автомобіля.",
-        learning: "Зображення, форми, образи, тривимірний простір."
-      },
-      "Міжособистісний": {
-        description: "Сприйняття почуттів інших людей; здатність встановлювати зв’язок з іншими; інтерпретація поведінки та спілкування; розуміння взаємин між людьми та їхніми ситуаціями, включно з іншими людьми.",
-        roles: "Терапевти, фахівці з людських ресурсів, медіатори, лідери, консультанти, політики, педагоги, продавці, духовенство, психологи, вчителі, лікарі, цілителі, організатори, доглядальники, фахівці з реклами, тренери та наставники.",
-        activities: "Інтерпретувати настрій за виразами обличчя; демонструвати почуття за допомогою мови тіла; впливати на почуття інших цілеспрямовано; навчати або консультувати іншу людину.",
-        learning: "Людський контакт, спілкування, співпраця, командна робота."
-      },
-      "Внутрішньоособистісний": {
-        description: "Самосвідомість, особисте усвідомлення, особиста об’єктивність, здатність розуміти себе, свої взаємини з іншими і світом, а також власну потребу у змінах і реакцію на них.",
-        roles: "Будь-хто, хто усвідомлює себе і бере участь у процесі зміни особистих думок, переконань і поведінки; подібність до рівня самоактуалізації за Маслоу; пов’язаний з емоційним інтелектом (EQ).",
-        activities: "Розглянути і визначити власні цілі та необхідні особисті зміни для їх досягнення; розглянути власне 'Вікно Йогарі' та варіанти розвитку; розглянути власну позицію щодо моделі емоційного інтелекту.",
-        learning: "Саморефлексія, самопізнання."
-      }
-    };
+  // Категорії з номерами питань (1-based)
+  const categories = {
+    "Мовний (лінгвістичний)": [6,8,9,14,23,31,33,50,52,60],
+    "Логіко-математичний": [5,10,11,17,20,29,32,40,49,54],
+    "Музичний": [2,4,13,18,25,30,39,51,64,66],
+    "Тілесно-кінестетичний": [3,7,15,22,34,38,42,45,47,53],
+    "Просторово-візуальний": [21,24,26,37,44,48,59,61,67,68],
+    "Міжособистісний": [19,27,36,43,46,58,62,63,65,70],
+    "Внутрішньоособистісний": [1,12,16,28,35,41,55,56,57,69]
+  };
 
-    const pointsForAnswers = [1, 2, 3, 4]; // 4 варіанти оцінки (наприклад від "майже ніколи" до "майже завжди")
-    const answerOptions = [
-      "Майже ніколи",
-      "Іноді",
-      "Часто",
-      "Майже завжди"
-    ];
+  // Інформація для виводу після тесту
+  const categoriesInfo = {
+    "Мовний (лінгвістичний)": {
+      description: "Слова та мова, писемна і усна; запам’ятовування, інтерпретація та пояснення ідей і інформації через мову, розуміння зв’язку між спілкуванням і значенням.",
+      roles: "Письменники, юристи, журналісти, оратори, тренери, копірайтери, викладачі англійської мови, поети, редактори, лінгвісти, перекладачі, PR-консультанти, медіа-консультанти, телеведучі та радіоведучі, диктори.",
+      activities: "Написати набір інструкцій; виступити з промовою на тему; редагувати написаний текст або роботу; написати промову; коментувати подію; застосувати позитивне або негативне трактування до історії.",
+      learning: "Слова та мова."
+    },
+    "Логіко-математичний": {
+      description: "Логічне мислення, виявлення закономірностей, наукове мислення та дедукція; аналіз проблем, виконання математичних обчислень, розуміння зв’язку між причиною і наслідком для досягнення конкретного результату.",
+      roles: "Науковці, інженери, комп’ютерні фахівці, бухгалтери, статистики, дослідники, аналітики, торговці, банкіри, букмекери, страхові брокери, переговорники, укладачі угод, фахівці з вирішення проблем, директори.",
+      activities: "Виконати усні арифметичні обчислення; створити процес для вимірювання чогось складного; проаналізувати, як працює машина; розробити процес; розробити стратегію для досягнення мети; оцінити вартість бізнесу або пропозиції.",
+      learning: "Числа та логіка."
+    },
+    "Музичний": {
+      description: "Музичні здібності, усвідомлення, сприйняття та використання звуків; розпізнавання тональних і ритмічних візерунків, розуміння зв’язку між звуком і почуттям.",
+      roles: "Музиканти, співаки, композитори, діджеї, музичні продюсери, настройники піаніно, акустичні інженери, артисти, організатори свят, консультанти з навколишнього середовища та шуму, вокальні тренери.",
+      activities: "Виконувати музичний твір; співати пісню; рецензувати музичну роботу; навчати когось грати на музичному інструменті; підбирати фонову музику для телефонних систем і приймалень.",
+      learning: "Музика, звуки, ритм."
+    },
+    "Тілесно-кінестетичний": {
+      description: "Контроль рухів тіла, мануальна спритність, фізична гнучкість і рівновага; координація очей і тіла.",
+      roles: "Танцюристи, демонстратори, актори, спортсмени, дайвери, військові, пожежники, інструктори з фізичної підготовки, артисти виконавці; ергономісти, остеопати, рибалки, водії, ремісники; садівники, кухарі, акупунктуристи, цілителі, авантюристи.",
+      activities: "Жонглювати; демонструвати спортивну техніку; кидати підставку для пива; створювати мімічний виступ для пояснення чогось; підкидати млинець; запускати повітряного змія; навчати правильної робочої постави, оцінювати ергономіку робочого місця.",
+      learning: "Фізичний досвід і рух, дотик і відчуття."
+    },
+    "Просторово-візуальний": {
+      description: "Візуальне та просторове сприйняття; інтерпретація та створення візуальних образів; образне уявлення та вираження; розуміння зв’язку між образами і значеннями, а також між простором і ефектом.",
+      roles: "Художники, дизайнери, мультиплікатори, сценаристи, архітектори, фотографи, скульптори, містобудівники, візіонери, винахідники, інженери, консультанти з косметики та краси.",
+      activities: "Спроектувати костюм; інтерпретувати картину; створити план кімнати; розробити корпоративний логотип; спроектувати будівлю; упакувати валізу або багажник автомобіля.",
+      learning: "Зображення, форми, образи, тривимірний простір."
+    },
+    "Міжособистісний": {
+      description: "Сприйняття почуттів інших людей; здатність встановлювати зв’язок з іншими; інтерпретація поведінки та спілкування; розуміння взаємин між людьми та їхніми ситуаціями, включно з іншими людьми.",
+      roles: "Терапевти, фахівці з людських ресурсів, медіатори, лідери, консультанти, політики, педагоги, продавці, духовенство, психологи, вчителі, лікарі, цілителі, організатори, доглядальники, фахівці з реклами, тренери та наставники.",
+      activities: "Інтерпретувати настрій за виразами обличчя; демонструвати почуття за допомогою мови тіла; впливати на почуття інших цілеспрямовано; навчати або консультувати іншу людину.",
+      learning: "Людський контакт, спілкування, співпраця, командна робота."
+    },
+    "Внутрішньоособистісний": {
+      description: "Самосвідомість, особисте усвідомлення, особиста об’єктивність, здатність розуміти себе, свої взаємини з іншими і світом, а також власну потребу у змінах і реакцію на них.",
+      roles: "Будь-хто, хто усвідомлює себе і бере участь у процесі зміни особистих думок, переконань і поведінки; подібність до рівня самоактуалізації за Маслоу; пов’язаний з емоційним інтелектом (EQ).",
+      activities: "Розглянути і визначити власні цілі та необхідні особисті зміни для їх досягнення; розглянути власне 'Вікно Йогарі' та варіанти розвитку; розглянути власну позицію щодо моделі емоційного інтелекту.",
+      learning: "Саморефлексія, самопізнання."
+    }
+  };
 
-    const form = document.getElementById("miForm");
-    const questionsContainer = document.getElementById("questionsContainer");
-    const timerEl = document.getElementById("timer");
-    const resultChart = document.getElementById("resultChart");
-    const resultsInfo = document.getElementById("resultsInfo");
-    const downloadBtn = document.getElementById("downloadBtn");
+  let ageUnder16 = false;
+  let currentQuestionIndex = 0;
+  let timerInterval;
+  const timerDuration = 30; // секунд
+  let timerRemaining = timerDuration;
+  const scores = {
+    "Мовний (лінгвістичний)": 0,
+    "Логіко-математичний": 0,
+    "Музичний": 0,
+    "Тілесно-кінестетичний": 0,
+    "Просторово-візуальний": 0,
+    "Міжособистісний": 0,
+    "Внутрішньоособистісний": 0
+  };
 
-    let age = 0;
-    let currentQuestionIndex = 0;
-    let questions = [];
-    let scores = {}; // {category: sum of points}
-    let timer;
-    let timeLeft;
+  const miForm = document.getElementById("miForm");
+  const questionsContainer = document.getElementById("questionsContainer");
+  const timerEl = document.getElementById("timer");
+  const resultChart = document.getElementById("resultChart");
+  const resultsInfo = document.getElementById("resultsInfo");
+  const downloadResultsBtn = document.getElementById("downloadResultsBtn");
 
-    // Початкове обнулення балів категорій
+  function getQuestionSet(age) {
+    if (age < 16) {
+      return questionIndexesUnder16.map(i => allQuestions[i]);
+    }
+    return allQuestions;
+  }
+
+  function resetScores() {
+    for (let key in scores) {
+      scores[key] = 0;
+    }
+  }
+
+  function mapQuestionToCategory(questionNumber) {
+    // questionNumber 1-based
     for (const cat in categories) {
-      scores[cat] = 0;
+      if (categories[cat].includes(questionNumber)) return cat;
+    }
+    return null;
+  }
+
+  function showQuestion(index, questions) {
+    questionsContainer.innerHTML = "";
+    if (index >= questions.length) {
+      finishTest();
+      return;
     }
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      age = +form.age.value;
+    const qNum = ageUnder16 ? questionIndexesUnder16[index] + 1 : index + 1;
+    const category = mapQuestionToCategory(qNum);
 
-      // Вибір питань залежно від віку
-      if (age < 16) {
-        questions = questionIndexesUnder16.map(i => ({
-          text: allQuestions[i],
-          originalIndex: i
-        }));
-      } else {
-        questions = allQuestions.map((q, i) => ({
-          text: q,
-          originalIndex: i
-        }));
+    const questionDiv = document.createElement("div");
+    questionDiv.textContent = `Питання ${index + 1} (${category}): ${questions[index]}`;
+    questionsContainer.appendChild(questionDiv);
+
+    // Варіанти відповіді 1-4, як бали, користувач клікає по них
+    for (let i = 1; i <= 4; i++) {
+      const option = document.createElement("div");
+      option.textContent = i;
+      option.className = "option";
+      option.tabIndex = 0;
+      option.setAttribute("role", "button");
+      option.setAttribute("aria-pressed", "false");
+
+      option.onclick = () => {
+        scores[category] += i;
+        clearInterval(timerInterval);
+        currentQuestionIndex++;
+        timerRemaining = timerDuration;
+        showQuestion(currentQuestionIndex, questions);
+      };
+      option.onkeypress = (e) => {
+        if (e.key === "Enter" || e.key === " ") option.click();
+      };
+
+      questionsContainer.appendChild(option);
+    }
+
+    // Таймер
+    timerRemaining = timerDuration;
+    timerEl.textContent = `Час на питання: ${timerRemaining} сек.`;
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timerRemaining--;
+      timerEl.textContent = `Час на питання: ${timerRemaining} сек.`;
+      if (timerRemaining <= 0) {
+        // Якщо час вийшов, рахуємо 0 балів (пропускаємо питання)
+        clearInterval(timerInterval);
+        currentQuestionIndex++;
+        showQuestion(currentQuestionIndex, questions);
       }
+    }, 1000);
+  }
 
-      form.style.display = "none";
-      questionsContainer.style.display = "block";
-      showQuestion();
+  miForm.onsubmit = function (e) {
+    e.preventDefault();
+    const age = Number(miForm.age.value);
+    if (age < 5 || age > 100) {
+      alert("Вік має бути від 5 до 100 років");
+      return;
+    }
+    ageUnder16 = age < 16;
+
+    // Сховати форму і показати питання
+    miForm.style.display = "none";
+    questionsContainer.style.display = "block";
+    resultChart.style.display = "none";
+    resultsInfo.innerHTML = "";
+    downloadResultsBtn.style.display = "none";
+
+    resetScores();
+    currentQuestionIndex = 0;
+
+    const questions = getQuestionSet(age);
+    showQuestion(currentQuestionIndex, questions);
+  };
+
+  function finishTest() {
+    clearInterval(timerInterval);
+    questionsContainer.style.display = "none";
+    timerEl.textContent = "";
+
+    // Відображення результатів
+    resultChart.style.display = "block";
+
+    // Підготовка даних для діаграми
+    const labels = [];
+    const data = [];
+    for (const cat in scores) {
+      labels.push(cat);
+      data.push(scores[cat]);
+    }
+
+    // Сортуємо категорії за балами за спаданням
+    const sorted = labels.map((l, i) => ({ cat: l, score: data[i] }))
+      .sort((a,b) => b.score - a.score);
+
+    const sortedLabels = sorted.map(o => o.cat);
+    const sortedData = sorted.map(o => o.score);
+
+    // Кольори для пі-діаграми
+    const colors = [
+      '#007aff', '#34c759', '#ff9500', '#ff3b30', '#5856d6', '#5ac8fa', '#ffcc00'
+    ];
+
+    if (window.myChart) {
+      window.myChart.destroy();
+    }
+
+    window.myChart = new Chart(resultChart, {
+      type: 'pie',
+      data: {
+        labels: sortedLabels,
+        datasets: [{
+          data: sortedData,
+          backgroundColor: colors,
+          borderWidth: 1,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
     });
 
-    function showQuestion() {
-      if (currentQuestionIndex >= questions.length) {
-        finishTest();
-        return;
+    // Показати інформацію під графіком
+    resultsInfo.innerHTML = "";
+    sorted.forEach(({cat, score}) => {
+      if(score === 0) return; // не показувати категорії з нулем
+      const info = categoriesInfo[cat];
+      const catBlock = document.createElement("div");
+      catBlock.innerHTML = `
+        <h3>${cat} (${score} балів)</h3>
+        <p><b>Опис:</b> ${info.description}</p>
+        <p><b>Ролі:</b> ${info.roles}</p>
+        <p><b>Діяльність:</b> ${info.activities}</p>
+        <p><b>Навчання:</b> ${info.learning}</p>
+      `;
+      resultsInfo.appendChild(catBlock);
+    });
+
+    downloadResultsBtn.style.display = "block";
+  }
+
+  downloadResultsBtn.addEventListener("click", async () => {
+    // Зробимо скрін діаграми у PNG
+    const chartCanvas = resultChart;
+    const pngUrl = chartCanvas.toDataURL("image/png");
+
+    // Зробимо скрін блока з описом у картинку через html2canvas
+    const infoElement = document.getElementById("resultsInfo");
+    const infoCanvas = await html2canvas(infoElement, { scale: 2 });
+    const infoImgData = infoCanvas.toDataURL("image/png");
+
+    const { jsPDF } = window.jspdf;
+
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "a4",
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    let y = 20;
+
+    pdf.setFontSize(18);
+    pdf.text("Результати тесту Множинних Інтелектів", pageWidth / 2, y, { align: "center" });
+    y += 30;
+
+    // Додаємо графік (прибл. 250x250)
+    pdf.addImage(pngUrl, "PNG", (pageWidth - 250) / 2, y, 250, 250);
+    y += 270;
+
+    // Додаємо опис (можливо, займе декілька сторінок)
+    const imgProps = pdf.getImageProperties(infoImgData);
+    const pdfImgWidth = pageWidth - 40;
+    const pdfImgHeight = (imgProps.height * pdfImgWidth) / imgProps.width;
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    if (pdfImgHeight < pageHeight - y) {
+      pdf.addImage(infoImgData, "PNG", 20, y, pdfImgWidth, pdfImgHeight);
+    } else {
+      let heightLeft = pdfImgHeight;
+      let position = y;
+      while (heightLeft > 0) {
+        pdf.addImage(infoImgData, "PNG", 20, position, pdfImgWidth, pdfImgHeight);
+        heightLeft -= pageHeight - position;
+        position = 20;
+        if (heightLeft > 0) pdf.addPage();
       }
-      const questionObj = questions[currentQuestionIndex];
-      questionsContainer.innerHTML = `<div style="font-weight:600; font-size:1.1rem;">Питання ${currentQuestionIndex + 1} з ${questions.length}:</div><div style="margin-top:0.5rem;">${questionObj.text}</div>`;
-
-      answerOptions.forEach((optionText, idx) => {
-        const btn = document.createElement("button");
-        btn.textContent = optionText;
-        btn.classList.add("option");
-        btn.type = "button";
-        btn.addEventListener("click", () => {
-          handleAnswer(idx + 1, questionObj.originalIndex);
-        });
-        questionsContainer.appendChild(btn);
-      });
-
-      startTimer();
     }
 
-    function startTimer() {
-      clearInterval(timer);
-      timeLeft = 30;
-      timerEl.textContent = `Час на відповідь: ${timeLeft} с`;
-      timer = setInterval(() => {
-        timeLeft--;
-        timerEl.textContent = `Час на відповідь: ${timeLeft} с`;
-        if (timeLeft <= 0) {
-          clearInterval(timer);
-          // Якщо не відповіли - вважаємо "Майже ніколи" (1 бал)
-          handleAnswer(1, questions[currentQuestionIndex].originalIndex);
-        }
-      }, 1000);
-    }
-
-    function handleAnswer(point, originalIndex) {
-      clearInterval(timer);
-
-      // Додаємо очки до категорії
-      for (const cat in categories) {
-        if (categories[cat].includes(originalIndex + 1)) { // +1 бо категорії з 1-ої
-          scores[cat] += point;
-        }
-      }
-
-      currentQuestionIndex++;
-      showQuestion();
-    }
-
-    function finishTest() {
-      questionsContainer.style.display = "none";
-      timerEl.textContent = "";
-
-      // Показ результатів у вигляді графіку
-      const labels = Object.keys(scores);
-      const dataPoints = labels.map(label => scores[label]);
-
-      resultChart.style.display = "block";
-      if(window.chartInstance) {
-        window.chartInstance.destroy();
-      }
-      window.chartInstance = new Chart(resultChart.getContext("2d"), {
-        type: "bar",
-        data: {
-          labels,
-          datasets: [{
-            label: "Бали за категоріями",
-            data: dataPoints,
-            backgroundColor: [
-              "#007aff",
-              "#34c759",
-              "#ff9500",
-              "#ff3b30",
-              "#5856d6",
-              "#ff2d55",
-              "#5ac8fa"
-            ],
-            borderRadius: 10
-          }]
-        },
-        options: {
-          indexAxis: "y",
-          scales: {
-            x: { beginAtZero: true }
-          },
-          plugins: {
-            legend: { display: false }
-          }
-        }
-      });
-
-      // Показ інформації під графіком
-      resultsInfo.innerHTML = "";
-      labels.forEach(cat => {
-        const info = categoriesInfo[cat];
-        if (!info) return;
-        const html = `
-          <h3>${cat}</h3>
-          <p><b>Опис:</b> ${info.description}</p>
-          <p><b>Ролі:</b> ${info.roles}</p>
-          <p><b>Активності:</b> ${info.activities}</p>
-          <p><b>Навчання:</b> ${info.learning}</p>
-          <hr>
-        `;
-        resultsInfo.insertAdjacentHTML("beforeend", html);
-      });
-
-      downloadBtn.style.display = "none"; // Як ти раніше просив, без завантаження
-    }
-  </script>
+    pdf.save("Результати_Множинних_Інтелектів.pdf");
+  });
+</script>
 </body>
 </html>
