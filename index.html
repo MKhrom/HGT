@@ -3,404 +3,727 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Тест Множинних Інтелектів</title>
+<title>Множинні інтелекти за Гарднером — опис, уподобання, особистий потенціал, пов’язані завдання та тести</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif; background:#f7f9fc; color:#222; margin: 0; padding: 20px; }
-  h1, h2 { color: #004d99; }
-  #quiz-container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 12px rgb(0 0 0 / 0.1); }
-  .question { margin-bottom: 20px; font-size: 1.1em; }
-  .answers label { display: block; margin-bottom: 10px; cursor: pointer; padding: 8px; border-radius: 6px; border: 1px solid #ddd; }
-  .answers label:hover { background: #007acc; color: white; }
-  .answers input[type="radio"] { margin-right: 10px; }
-  #timer { font-size: 1.2em; font-weight: bold; color: #cc3300; margin-bottom: 20px; }
-  #next-btn { background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 1em; }
-  #next-btn:disabled { background: #99c2ff; cursor: not-allowed; }
-  #result { max-width: 700px; margin: 30px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 12px rgb(0 0 0 / 0.1); }
-  .tooltip {
-    text-decoration: underline;
-    color: #007acc;
-    cursor: help;
-    font-weight: bold;
+  @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Text&display=swap');
+  /* iOS style basics */
+  * {
+    box-sizing: border-box;
   }
-  .result-item {
-    margin-bottom: 15px;
-    font-size: 1.1em;
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    background: #f2f2f7;
+    margin: 0; padding: 0;
+    color: #000;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 20px 10px;
   }
-  #export-buttons {
+  #app {
+    background: #fff;
+    max-width: 600px;
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    padding: 30px 25px 40px;
+    display: flex;
+    flex-direction: column;
+  }
+  h1 {
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-bottom: 0.8em;
+    text-align: center;
+    color: #1c1c1e;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #3a3a3c;
+  }
+  input[type="text"], input[type="number"], select {
+    font-size: 1rem;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    background: #fafafa;
+    width: 100%;
+    margin-bottom: 18px;
+    transition: border-color 0.2s ease;
+  }
+  input[type="text"]:focus, input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: #007aff;
+    background: #fff;
+  }
+  .button {
+    background: #007aff;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    padding: 14px 0;
+    border-radius: 18px;
+    cursor: pointer;
+    user-select: none;
+    margin-top: 10px;
+    box-shadow: 0 2px 6px rgba(0,122,255,0.5);
+    transition: background-color 0.3s ease;
+  }
+  .button:disabled {
+    background: #a0a0a5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .button:hover:not(:disabled) {
+    background: #005ecb;
+  }
+  .question {
+    margin-bottom: 25px;
+  }
+  .question-text {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1c1c1e;
+  }
+  .options {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .option-label {
+    flex: 1;
+    background: #e5e5ea;
+    border-radius: 14px;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    color: #3a3a3c;
+  }
+  input[type="radio"] {
+    display: none;
+  }
+  input[type="radio"]:checked + .option-label {
+    background: #007aff;
+    color: white;
+  }
+  #results {
     margin-top: 20px;
   }
-  button.export-btn {
-    background: #004d99;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    margin-right: 10px;
-    border-radius: 6px;
-    cursor: pointer;
+  #results h2 {
+    text-align: center;
+    margin-bottom: 20px;
   }
-  button.export-btn:hover {
-    background: #003366;
+  .bar-container {
+    margin-bottom: 15px;
   }
-  canvas {
-    margin-top: 30px;
-    max-width: 100%;
+  .bar-label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #1c1c1e;
+  }
+  .bar {
+    width: 100%;
+    height: 24px;
+    border-radius: 12px;
+    background: #e5e5ea;
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 12px 0 0 12px;
+  }
+  #download-btn {
+    margin-top: 20px;
+    display: block;
+    width: 100%;
+  }
+  footer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #8e8e93;
+    margin-top: 40px;
   }
 </style>
 </head>
 <body>
+<div id="app" role="main" aria-label="Множинні інтелекти за Гарднером тест">
+  <h1>Множинні інтелекти за Гарднером — опис, уподобання, особистий потенціал, пов’язані завдання та тести</h1>
+  <form id="quiz-form" novalidate>
+    <div class="question" id="q1">
+      <label for="fullname">1. Вкажіть ваше ім’я та прізвище:</label>
+      <input type="text" id="fullname" name="fullname" autocomplete="name" required placeholder="Ім'я та прізвище" />
+    </div>
+    <div class="question" id="q2">
+      <label for="age">2. Вкажіть ваш вік:</label>
+      <input type="number" id="age" name="age" min="5" max="120" required placeholder="Вік" />
+    </div>
+    <div class="question" id="q3">
+      <label for="sex">3. Вкажіть вашу стать:</label>
+      <select id="sex" name="sex" required aria-required="true">
+        <option value="" disabled selected>Оберіть стать</option>
+        <option value="male">Чоловіча</option>
+        <option value="female">Жіноча</option>
+      </select>
+    </div>
+    <div id="questions-container" aria-live="polite" aria-relevant="additions"></div>
+    <button type="submit" class="button" id="submit-btn" disabled>Відправити</button>
+  </form>
 
-<div id="quiz-container">
-  <h1>Тест Множинних Інтелектів</h1>
-  <label for="user-age">Вкажіть ваш вік:</label><br />
-  <input type="number" id="user-age" min="5" max="100" style="width: 60px; margin-bottom: 15px;" />
-  <br />
-  <button id="start-btn">Почати тест</button>
-
-  <div id="timer" style="display:none;">Час: <span id="time-left">30</span> сек</div>
-
-  <div id="question-container" style="display:none;">
-    <div class="question" id="question-text"></div>
-    <div class="answers" id="answers-container"></div>
-    <button id="next-btn" disabled>Наступне</button>
-  </div>
+  <section id="results" style="display:none;" aria-live="polite">
+    <h2>Результати</h2>
+    <canvas id="results-chart" width="560" height="400" aria-label="Графік результатів"></canvas>
+    <button class="button" id="download-btn" aria-label="Завантажити графік у форматі PNG">Завантажити графік</button>
+  </section>
+  <footer>
+    &copy; 2025 Тест Множинних інтелектів за Гарднером
+  </footer>
 </div>
-
-<div id="result" style="display:none;">
-  <h2>Результати тесту:</h2>
-  <div id="result-scores"></div>
-  <canvas id="result-chart" width="600" height="400"></canvas>
-  <div id="export-buttons">
-    <button class="export-btn" id="export-pdf">Експортувати в PDF</button>
-    <button class="export-btn" id="export-img">Експортувати як зображення</button>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
 (() => {
-  // Питання (тут має бути весь набір твоїх 70 питань з категоріями)
-  // Для прикладу поставлю кілька:
-  const allQuestions = [
-    { id: 1, text: "Я легко запам’ятовую слова і фрази.", category: "Мовленнєвий" },
-    { id: 2, text: "Мені подобається розв’язувати логічні задачі.", category: "Логіко-математичний" },
-    { id: 3, text: "Я часто наспівую мелодії.", category: "Музичний" },
-    { id: 4, text: "Мені подобається займатись спортом.", category: "Тілесно-кінестетичний" },
-    { id: 5, text: "Я добре орієнтуюсь на місцевості.", category: "Візуально-просторовий" },
-    { id: 6, text: "Я легко розумію настрої інших людей.", category: "Міжособистісний" },
-    { id: 7, text: "Я розумію власні почуття і мотиви.", category: "Внутрішньоособистісний" }
-    // ... додай всі 70 питань тут, із відповідними категоріями та текстом
+  'use strict';
+
+  // Question texts masculine and feminine versions (index 0-based, question #1 = index 0)
+  const questionsData = [
+    {
+      masculine: "Мені подобається дізнаватися більше про себе",
+      feminine: "Мені подобається дізнаватися більше про себе"
+    },
+    {
+      masculine: "Я вмію грати на музичному інструменті",
+      feminine: "Я вмію грати на музичному інструменті"
+    },
+    {
+      masculine: "Найлегше вирішую проблеми, коли займаюся чимось фізичним",
+      feminine: "Найлегше вирішую проблеми, коли займаюся чимось фізичним"
+    },
+    {
+      masculine: "У мене часто в голові звучить пісня або музичний твір",
+      feminine: "У мене часто в голові звучить пісня або музичний твір"
+    },
+    {
+      masculine: "Мені легко планувати бюджет і керувати грошима",
+      feminine: "Мені легко планувати бюджет і керувати грошима"
+    },
+    {
+      masculine: "Мені легко вигадувати історії",
+      feminine: "Мені легко вигадувати історії"
+    },
+    {
+      masculine: "Я завжди мав хорошу координацію",
+      feminine: "Я завжди мала хорошу координацію"
+    },
+    {
+      masculine: "Розмовляючи з кимось, я звертаю увагу не лише на сенс, а й на слова, які використовуються",
+      feminine: "Розмовляючи з кимось, я звертаю увагу не лише на сенс, а й на слова, які використовуються"
+    },
+    {
+      masculine: "Я люблю кросворди, пошук слів або інші словесні головоломки",
+      feminine: "Я люблю кросворди, пошук слів або інші словесні головоломки"
+    },
+    {
+      masculine: "Я не люблю неоднозначність, мені подобається ясність",
+      feminine: "Я не люблю неоднозначність, мені подобається ясність"
+    },
+    {
+      masculine: "Мені подобаються логічні головоломки, наприклад судоку",
+      feminine: "Мені подобаються логічні головоломки, наприклад судоку"
+    },
+    {
+      masculine: "Я люблю медитувати",
+      feminine: "Я люблю медитувати"
+    },
+    {
+      masculine: "Музика дуже важлива для мене",
+      feminine: "Музика дуже важлива для мене"
+    },
+    {
+      masculine: "Я переконливий брехун",
+      feminine: "Я переконлива брехунка"
+    },
+    {
+      masculine: "Я займаюся спортом або танцями",
+      feminine: "Я займаюся спортом або танцями"
+    },
+    {
+      masculine: "Мене дуже цікавлять психометричні тести (тести особистості) та тести IQ",
+      feminine: "Мене дуже цікавлять психометричні тести (тести особистості) та тести IQ"
+    },
+    {
+      masculine: "Мене дратують люди, які поводяться нераціонально",
+      feminine: "Мене дратують люди, які поводяться нераціонально"
+    },
+    {
+      masculine: "Музика, яка мені подобається, часто відповідає моєму емоційному стану",
+      feminine: "Музика, яка мені подобається, часто відповідає моєму емоційному стану"
+    },
+    {
+      masculine: "Я дуже товариська людина і люблю бути серед людей",
+      feminine: "Я дуже товариська людина і люблю бути серед людей"
+    },
+    {
+      masculine: "Я люблю діяти системно та ретельно",
+      feminine: "Я люблю діяти системно та ретельно"
+    },
+    {
+      masculine: "Мені легко розуміти графіки та діаграми",
+      feminine: "Мені легко розуміти графіки та діаграми"
+    },
+    {
+      masculine: "Я добре кидаю речі — дротики, камінці, фрізбі тощо",
+      feminine: "Я добре кидаю речі — дротики, камінці, фрізбі тощо"
+    },
+    {
+      masculine: "Мені легко запам’ятовувати цитати чи фрази",
+      feminine: "Мені легко запам’ятовувати цитати чи фрази"
+    },
+    {
+      masculine: "Я завжди впізнаю місця, де вже бував, навіть у дитинстві",
+      feminine: "Я завжди впізнаю місця, де вже була, навіть у дитинстві"
+    },
+    {
+      masculine: "Мені подобаються різні музичні стилі",
+      feminine: "Мені подобаються різні музичні стилі"
+    },
+    {
+      masculine: "Коли я зосереджений, я часто щось малюю або креслю",
+      feminine: "Коли я зосереджена, я часто щось малюю або креслю"
+    },
+    {
+      masculine: "Я міг маніпулювати людьми, якби захотів",
+      feminine: "Я могла маніпулювати людьми, якби захотіла"
+    },
+    {
+      masculine: "Я можу досить точно передбачити свої почуття та поведінку в певних ситуаціях",
+      feminine: "Я можу досить точно передбачити свої почуття та поведінку в певних ситуаціях"
+    },
+    {
+      masculine: "Мені легко робити усні обчислення",
+      feminine: "Мені легко робити усні обчислення"
+    },
+    {
+      masculine: "Я можу розпізнавати більшість звуків, не бачачи їх джерела",
+      feminine: "Я можу розпізнавати більшість звуків, не бачачи їх джерела"
+    },
+    {
+      masculine: "У школі одним із моїх улюблених предметів була англійська мова",
+      feminine: "У школі одним із моїх улюблених предметів була англійська мова"
+    },
+    {
+      masculine: "Мені подобається обдумувати проблему, зважуючи всі наслідки",
+      feminine: "Мені подобається обдумувати проблему, зважуючи всі наслідки"
+    },
+    {
+      masculine: "Я люблю дебати та обговорення",
+      feminine: "Я люблю дебати та обговорення"
+    },
+    {
+      masculine: "Я люблю екстремальні види спорту та страшні атракціони",
+      feminine: "Я люблю екстремальні види спорту та страшні атракціони"
+    },
+    {
+      masculine: "Мені більше подобаються індивідуальні види спорту",
+      feminine: "Мені більше подобаються індивідуальні види спорту"
+    },
+    {
+      masculine: "Мені не байдуже, як почуваються люди навколо мене",
+      feminine: "Мені не байдуже, як почуваються люди навколо мене"
+    },
+    {
+      masculine: "Мій дім повен фотографій та картин",
+      feminine: "Мій дім повен фотографій та картин"
+    },
+    {
+      masculine: "Я люблю щось майструвати — у мене вправні руки",
+      feminine: "Я люблю щось майструвати — у мене вправні руки"
+    },
+    {
+      masculine: "Мені подобається, коли музика звучить у фоновому режимі",
+      feminine: "Мені подобається, коли музика звучить у фоновому режимі"
+    },
+    {
+      masculine: "Я легко запам’ятовую телефонні номери",
+      feminine: "Я легко запам’ятовую телефонні номери"
+    },
+    {
+      masculine: "Я ставлю собі цілі та плани на майбутнє",
+      feminine: "Я ставлю собі цілі та плани на майбутнє"
+    },
+    {
+      masculine: "Я дуже тактильна людина",
+      feminine: "Я дуже тактильна людина"
+    },
+    {
+      masculine: "Я легко розумію, чи подобаюсь я комусь чи ні",
+      feminine: "Я легко розумію, чи подобаюсь я комусь чи ні"
+    },
+    {
+      masculine: "Я легко уявляю, як виглядає об’єкт з іншої точки зору",
+      feminine: "Я легко уявляю, як виглядає об’єкт з іншої точки зору"
+    },
+    {
+      masculine: "Я ніколи не використовую інструкції для збирання меблів",
+      feminine: "Я ніколи не використовую інструкції для збирання меблів"
+    },
+    {
+      masculine: "Мені легко спілкуватися з новими людьми",
+      feminine: "Мені легко спілкуватися з новими людьми"
+    },
+    {
+      masculine: "Щоб навчитися чомусь новому, мені потрібно просто почати це робити",
+      feminine: "Щоб навчитися чомусь новому, мені потрібно просто почати це робити"
+    },
+    {
+      masculine: "Я часто бачу чіткі образи, коли заплющую очі",
+      feminine: "Я часто бачу чіткі образи, коли заплющую очі"
+    },
+    {
+      masculine: "Я не використовую пальці, коли рахую",
+      feminine: "Я не використовую пальці, коли рахую"
+    },
+    {
+      masculine: "Я часто розмовляю сам з собою — вголос або подумки",
+      feminine: "Я часто розмовляю сама з собою — вголос або подумки"
+    },
+    {
+      masculine: "У школі мені подобалися уроки музики",
+      feminine: "У школі мені подобалися уроки музики"
+    },
+    {
+      masculine: "За кордоном мені легко даються основи нової мови",
+      feminine: "За кордоном мені легко даються основи нової мови"
+    },
+    {
+      masculine: "Я люблю й мені легко даються ігри з м’ячем",
+      feminine: "Я люблю й мені легко даються ігри з м’ячем"
+    },
+    {
+      masculine: "Мій улюблений шкільний предмет — математика",
+      feminine: "Мій улюблений шкільний предмет — математика"
+    },
+    {
+      masculine: "Я завжди знаю, як себе почуваю",
+      feminine: "Я завжди знаю, як себе почуваю"
+    },
+    {
+      masculine: "Я реалістично оцінюю свої сильні та слабкі сторони",
+      feminine: "Я реалістично оцінюю свої сильні та слабкі сторони"
+    },
+    {
+      masculine: "Я веду щоденник",
+      feminine: "Я веду щоденник"
+    },
+    {
+      masculine: "Я дуже уважний до мови тіла інших людей",
+      feminine: "Я дуже уважна до мови тіла інших людей"
+    },
+    {
+      masculine: "Мій улюблений предмет у школі — мистецтво",
+      feminine: "Мій улюблений предмет у школі — мистецтво"
+    },
+    {
+      masculine: "Я отримую задоволення від читання",
+      feminine: "Я отримую задоволення від читання"
+    },
+    {
+      masculine: "Я легко читаю карти",
+      feminine: "Я легко читаю карти"
+    },
+    {
+      masculine: "Мені боляче бачити, як хтось плаче, і не мати змоги допомогти",
+      feminine: "Мені боляче бачити, як хтось плаче, і не мати змоги допомогти"
+    },
+    {
+      masculine: "Я добре вирішую конфлікти між іншими",
+      feminine: "Я добре вирішую конфлікти між іншими"
+    },
+    {
+      masculine: "Я завжди мріяв стати музикантом або співаком",
+      feminine: "Я завжди мріяла стати музикантом або співачкою"
+    },
+    {
+      masculine: "Я надаю перевагу командним видам спорту",
+      feminine: "Я надаю перевагу командним видам спорту"
+    },
+    {
+      masculine: "Спів робить мене щасливим",
+      feminine: "Спів робить мене щасливою"
+    },
+    {
+      masculine: "Я ніколи не гублюся, навіть у незнайомому місці",
+      feminine: "Я ніколи не гублюся, навіть у незнайомому місці"
+    },
+    {
+      masculine: "Коли я навчаюсь чомусь новому, мені подобається бачити схеми й малюнки",
+      feminine: "Коли я навчаюсь чомусь новому, мені подобається бачити схеми й малюнки"
+    },
+    {
+      masculine: "Мені комфортно проводити час наодинці",
+      feminine: "Мені комфортно проводити час наодинці"
+    },
+    {
+      masculine: "Друзі часто звертаються до мене за емоційною підтримкою та порадою",
+      feminine: "Друзі часто звертаються до мене за емоційною підтримкою та порадою"
+    }
   ];
 
-  // Якщо вік < 16, показувати лише ці питання (перелік з твоєї умови)
-  const under16AllowedIds = new Set([
-    2, 4, 6, 7, 13, 14, 15, 19, 21, 23, 24, 26, 29, 31, 32, 34, 35, 40, 41, 43, 47, 48, 49, 51, 53, 54, 55, 57, 59, 60, 62, 65, 66, 69, 70
+  // Question numbers for under 16 (1-based indices)
+  const under16Questions = new Set([
+    2,4,6,7,13,14,15,19,21,23,24,26,29,31,32,34,35,40,41,43,47,48,49,51,53,54,55,57,59,60,62,65,66,69,70
   ]);
 
-  // Підписи замість чисел у відповідях
-  const answerLabels = {
-    1: "Переважно не згоден",
-    2: "Частково не згоден",
-    3: "Частково згоден",
-    4: "Переважно згоден"
+  // Categories and their question numbers (1-based)
+  const categories = {
+    "Мовний (лінгвістичний)": [6,8,9,14,23,31,33,50,52,60],
+    "Логіко-математичний": [5,10,11,17,20,29,32,40,49,54],
+    "Музичний": [2,4,13,18,25,30,39,51,64,66],
+    "Тілесно-кінестетичний": [3,7,15,22,34,38,42,45,47,53],
+    "Просторово-візуальний": [21,24,26,37,44,48,59,61,67,68],
+    "Міжособистісний": [19,27,36,43,46,58,62,63,65,70],
+    "Внутрішньоособистісний": [1,12,16,28,35,41,55,56,57,69]
   };
 
-  // Опис категорій для tooltip
-  const categoryDescriptions = {
-    "Мовленнєвий": {
-      description: "Слова та мова, писемна і усна; запам’ятовування, інтерпретація та пояснення ідей і інформації через мову, розуміння зв’язку між спілкуванням і значенням.",
-      roles: "Письменники, юристи, журналісти, оратори, тренери, копірайтери, викладачі англійської мови, поети, редактори, лінгвісти, перекладачі, PR-консультанти, медіа-консультанти, телеведучі та радіоведучі, диктори.",
-      activities: "Написати набір інструкцій; виступити з промовою на тему; редагувати написаний текст або роботу; написати промову; коментувати подію; застосувати позитивне або негативне трактування до історії.",
-      learning: "Слова та мова."
-    },
-    "Логіко-математичний": {
-      description: "Логічне мислення, виявлення закономірностей, наукове мислення та дедукція; аналіз проблем, виконання математичних обчислень, розуміння зв’язку між причиною і наслідком для досягнення конкретного результату.",
-      roles: "Науковці, інженери, комп’ютерні фахівці, бухгалтери, статистики, дослідники, аналітики, торговці, банкіри, букмекери, страхові брокери, переговорники, укладачі угод, фахівці з вирішення проблем, директори.",
-      activities: "Виконати усні арифметичні обчислення; створити процес для вимірювання чогось складного; проаналізувати, як працює машина; розробити процес; розробити стратегію для досягнення мети; оцінити вартість бізнесу або пропозиції.",
-      learning: "Числа та логіка."
-    },
-    "Музичний": {
-      description: "Музикальні здібності, усвідомлення, сприйняття та використання звуків; розпізнавання тональних і ритмічних візерунків, розуміння зв’язку між звуком і почуттям.",
-      roles: "Музиканти, співаки, композитори, діджеї, музичні продюсери, настройники піаніно, акустичні інженери, артисти, організатори свят, консультанти з навколишнього середовища та шуму, вокальні тренери.",
-      activities: "Виконувати музичний твір; співати пісню; рецензувати музичну роботу; навчати когось грати на музичному інструменті; підбирати фонову музику для телефонних систем і приймалень.",
-      learning: "Музика, звуки, ритм."
-    },
-    "Тілесно-кінестетичний": {
-      description: "Контроль рухів тіла, мануальна спритність, фізична гнучкість і рівновага; координація очей і тіла.",
-      roles: "Танцюристи, демонстратори, актори, спортсмени, дайвери, військові, пожежники, інструктори з фізичної підготовки, артисти виконавці; ергономісти, остеопати, рибалки, водії, ремісники; садівники, кухарі, акупунктуристи, цілителі, авантюристи.",
-      activities: "Жонглювати; демонструвати спортивну техніку; кидати підставку для пива; створювати мімічний виступ для пояснення чогось; підкидати млинець; запускати повітряного змія; навчати правильної робочої постави, оцінювати ергономіку робочого місця.",
-      learning: "Фізичний досвід і рух, дотик і відчуття."
-    },
-    "Візуально-просторовий": {
-      description: "Візуальне та просторове сприйняття; інтерпретація та створення візуальних образів; образне уявлення та вираження; розуміння зв’язку між образами і значеннями, а також між простором і ефектом.",
-      roles: "Художники, дизайнери, мультиплікатори, сценаристи, архітектори, фотографи, скульптори, містобудівники, візіонери, винахідники, інженери, консультанти з косметики та краси.",
-      activities: "Спроектувати костюм; інтерпретувати картину; створити план кімнати; розробити корпоративний логотип; спроектувати будівлю; упакувати валізу або багажник автомобіля.",
-      learning: "Зображення, форми, образи, тривимірний простір."
-    },
-    "Міжособистісний": {
-      description: "Сприйняття почуттів інших людей; здатність встановлювати зв’язок з іншими; інтерпретація поведінки та спілкування; розуміння взаємин між людьми та їхніми ситуаціями, включно з іншими людьми.",
-      roles: "Терапевти, фахівці з людських ресурсів, медіатори, лідери, консультанти, політики, педагоги, продавці, духовенство, психологи, вчителі, лікарі, цілителі, організатори, доглядальники, фахівці з реклами, тренери та наставники.",
-      activities: "Інтерпретувати настрій за виразами обличчя; демонструвати почуття за допомогою мови тіла; впливати на почуття інших цілеспрямовано; навчати або консультувати іншу людину.",
-      learning: "Людський контакт, спілкування, співпраця, командна робота."
-    },
-    "Внутрішньоособистісний": {
-      description: "Самосвідомість, особисте усвідомлення, особиста об’єктивність, здатність розуміти себе, свої взаємини з іншими і світом, а також власну потребу у змінах і реакцію на них.",
-      roles: "Можна стверджувати, що це будь-хто, хто усвідомлює себе і бере участь у процесі зміни особистих думок, переконань і поведінки щодо своєї ситуації, інших людей, своїх цілей і призначення.",
-      activities: "Розглянути і визначити власні цілі та необхідні особисті зміни для їх досягнення (не обов’язково відкривати це іншим); розглянути власне 'Вікно Йогарі' та визначити варіанти розвитку; розглянути і визначити власну позицію щодо моделі емоційного інтелекту.",
-      learning: "Саморефлексія, самопізнання."
-    }
+  // Colors for categories
+  const categoryColors = {
+    "Мовний (лінгвістичний)": "#FF9500",
+    "Логіко-математичний": "#007AFF",
+    "Музичний": "#FF2D55",
+    "Тілесно-кінестетичний": "#34C759",
+    "Просторово-візуальний": "#AF52DE",
+    "Міжособистісний": "#FFCC00",
+    "Внутрішньоособистісний": "#5AC8FA"
   };
 
-  // DOM-елементи
-  const ageInput = document.getElementById("user-age");
-  const startBtn = document.getElementById("start-btn");
-  const quizContainer = document.getElementById("quiz-container");
-  const questionContainer = document.getElementById("question-container");
-  const questionText = document.getElementById("question-text");
-  const answersContainer = document.getElementById("answers-container");
-  const nextBtn = document.getElementById("next-btn");
-  const timerDisplay = document.getElementById("timer");
-  const timeLeftSpan = document.getElementById("time-left");
+  // State
+  let age = null;
+  let sex = null; // 'male' or 'female'
+  let filteredQuestionIndices = [];
 
-  const resultSection = document.getElementById("result");
-  const resultScores = document.getElementById("result-scores");
-  const resultChartCtx = document.getElementById("result-chart").getContext("2d");
-  const exportPdfBtn = document.getElementById("export-pdf");
-  const exportImgBtn = document.getElementById("export-img");
+  // Elements
+  const form = document.getElementById('quiz-form');
+  const fullnameInput = document.getElementById('fullname');
+  const ageInput = document.getElementById('age');
+  const sexSelect = document.getElementById('sex');
+  const questionsContainer = document.getElementById('questions-container');
+  const submitBtn = document.getElementById('submit-btn');
+  const resultsSection = document.getElementById('results');
+  const resultsCanvas = document.getElementById('results-chart');
+  const downloadBtn = document.getElementById('download-btn');
 
-  let userAge = 0;
-  let questions = [];
-  let currentQuestionIndex = 0;
-  let scores = {};
-  let timer = null;
-  let timeLeft = 30;
-  let chart = null;
-
-  startBtn.onclick = () => {
-    userAge = parseInt(ageInput.value);
-    if (!userAge || userAge < 5 || userAge > 100) {
-      alert("Будь ласка, введіть вік від 5 до 100.");
-      return;
-    }
-
-    // Фільтруємо питання згідно з віком
-    if (userAge < 16) {
-      questions = allQuestions.filter(q => under16AllowedIds.has(q.id));
-    } else {
-      questions = [...allQuestions];
-    }
-
-    if (questions.length === 0) {
-      alert("Немає доступних питань для вашого віку.");
-      return;
-    }
-
-    // Ініціалізація
-    currentQuestionIndex = 0;
-    scores = {};
-    for (const cat of Object.keys(categoryDescriptions)) {
-      scores[cat] = 0;
-    }
-
-    startBtn.style.display = "none";
-    ageInput.disabled = true;
-    showQuestion();
-    questionContainer.style.display = "block";
-    timerDisplay.style.display = "block";
-  };
-
-  function showQuestion() {
-    nextBtn.disabled = true;
-    timeLeft = 30;
-    timeLeftSpan.textContent = timeLeft;
-    startTimer();
-
-    const q = questions[currentQuestionIndex];
-    questionText.textContent = q.text;
-    answersContainer.innerHTML = "";
-
-    for (const [value, label] of Object.entries(answerLabels)) {
-      const id = `answer-${value}`;
-      const labelEl = document.createElement("label");
-      labelEl.htmlFor = id;
-      labelEl.textContent = label;
-      labelEl.style.transition = "background-color 0.3s, color 0.3s";
-
-      const input = document.createElement("input");
-      input.type = "radio";
-      input.name = "answer";
-      input.id = id;
-      input.value = value;
-
-      input.onchange = () => {
-        nextBtn.disabled = false;
-      };
-
-      labelEl.prepend(input);
-      answersContainer.appendChild(labelEl);
-
-      // Підсвічування при наведенні: змінити фон і колір
-      labelEl.addEventListener("mouseenter", () => {
-        labelEl.style.backgroundColor = "#004d99";
-        labelEl.style.color = "white";
-      });
-      labelEl.addEventListener("mouseleave", () => {
-        labelEl.style.backgroundColor = "";
-        labelEl.style.color = "";
-      });
-    }
+  // Helper: Clear questions container
+  function clearQuestions() {
+    questionsContainer.innerHTML = '';
   }
 
-  function startTimer() {
-    clearInterval(timer);
-    timer = setInterval(() => {
-      timeLeft--;
-      timeLeftSpan.textContent = timeLeft;
-      if (timeLeft <= 0) {
-        clearInterval(timer);
-        // Автоматично переходимо до наступного питання з поточним вибором або 0
-        if (!document.querySelector('input[name="answer"]:checked')) {
-          // Якщо не вибрали, ставимо 1 бал (Переважно не згоден) за замовчуванням
-          document.querySelector('input[name="answer"]').checked = true;
-        }
-        nextBtn.click();
+  // Helper: Check if form is ready to enable submit
+  function validateForm() {
+    const fullnameValid = fullnameInput.value.trim().length > 0;
+    const ageValid = ageInput.value && !isNaN(ageInput.value) && ageInput.value >= 5 && ageInput.value <= 120;
+    const sexValid = sexSelect.value === "male" || sexSelect.value === "female";
+
+    // Also check all questions answered
+    let allAnswered = true;
+    for (const idx of filteredQuestionIndices) {
+      const radios = form.querySelectorAll(`input[name="q${idx+1}"]`);
+      if (![...radios].some(r => r.checked)) {
+        allAnswered = false;
+        break;
       }
-    }, 1000);
+    }
+
+    submitBtn.disabled = !(fullnameValid && ageValid && sexValid && allAnswered);
   }
 
-  nextBtn.onclick = () => {
-    clearInterval(timer);
-    const selected = document.querySelector('input[name="answer"]:checked');
-    if (!selected) {
-      alert("Будь ласка, оберіть відповідь.");
-      return;
-    }
-    const answerValue = parseInt(selected.value);
-    const q = questions[currentQuestionIndex];
+  // Render questions based on age and sex
+  function renderQuestions() {
+    clearQuestions();
 
-    scores[q.category] = (scores[q.category] || 0) + answerValue;
+    if (!age || !sex) return;
 
-    currentQuestionIndex++;
-    if (currentQuestionIndex >= questions.length) {
-      showResults();
+    filteredQuestionIndices = [];
+
+    if (age < 16) {
+      // Under 16: only show specified question numbers (1-based)
+      filteredQuestionIndices = questionsData
+        .map((_,i) => i)
+        .filter(i => under16Questions.has(i+1));
     } else {
-      showQuestion();
+      // 16 or older: show all
+      filteredQuestionIndices = questionsData.map((_,i) => i);
     }
-  };
 
-  function showResults() {
-    quizContainer.style.display = "none";
-    questionContainer.style.display = "none";
-    timerDisplay.style.display = "none";
-    resultSection.style.display = "block";
+    for (const i of filteredQuestionIndices) {
+      const qText = sex === 'male' ? questionsData[i].masculine : questionsData[i].feminine;
+      const qNum = i+1;
 
-    // Сортуємо за балами спаданням
-    const sortedScores = Object.entries(scores)
+      const questionDiv = document.createElement('div');
+      questionDiv.className = 'question';
+      questionDiv.setAttribute('aria-labelledby', `label-q${qNum}`);
+
+      // Question text
+      const label = document.createElement('label');
+      label.id = `label-q${qNum}`;
+      label.className = 'question-text';
+      label.htmlFor = `q${qNum}-option1`;
+      label.textContent = `${qNum}. ${qText}`;
+      questionDiv.appendChild(label);
+
+      // Options container
+      const optionsDiv = document.createElement('div');
+      optionsDiv.className = 'options';
+
+      // Options: 1 to 4 with Ukrainian labels
+      const optionLabels = [
+        "Переважно не згоден",
+        "Частково не згоден",
+        "Частково згоден",
+        "Переважно згоден"
+      ];
+
+      for (let val=1; val<=4; val++) {
+        const inputId = `q${qNum}-option${val}`;
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = `q${qNum}`;
+        input.value = val;
+        input.id = inputId;
+        input.required = true;
+
+        const optionLabel = document.createElement('label');
+        optionLabel.htmlFor = inputId;
+        optionLabel.className = 'option-label';
+        optionLabel.textContent = optionLabels[val-1];
+
+        // Attach change event to validate form
+        input.addEventListener('change', validateForm);
+
+        optionsDiv.appendChild(input);
+        optionsDiv.appendChild(optionLabel);
+      }
+
+      questionDiv.appendChild(optionsDiv);
+      questionsContainer.appendChild(questionDiv);
+    }
+
+    validateForm();
+  }
+
+  // Event listeners for inputs that affect questions display
+  ageInput.addEventListener('input', () => {
+    const val = Number(ageInput.value);
+    if (!isNaN(val) && val >= 5 && val <= 120) {
+      age = val;
+    } else {
+      age = null;
+    }
+    renderQuestions();
+  });
+
+  sexSelect.addEventListener('change', () => {
+    sex = sexSelect.value;
+    renderQuestions();
+  });
+
+  fullnameInput.addEventListener('input', validateForm);
+
+  // Submit handler
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+
+    // Gather answers as numbers
+    const answers = new Array(70).fill(null);
+    for (const i of filteredQuestionIndices) {
+      const radios = form.querySelectorAll(`input[name="q${i+1}"]`);
+      for (const r of radios) {
+        if (r.checked) {
+          answers[i] = Number(r.value);
+          break;
+        }
+      }
+    }
+
+    // Calculate sums by category
+    const categoryScores = {};
+    for (const [cat, qNums] of Object.entries(categories)) {
+      let sum = 0;
+      for (const qn of qNums) {
+        const ans = answers[qn-1];
+        if (ans != null) sum += ans;
+      }
+      categoryScores[cat] = sum;
+    }
+
+    // Sort categories descending
+    const sortedCategories = Object.entries(categoryScores)
       .sort((a,b) => b[1] - a[1]);
 
-    resultScores.innerHTML = "";
-    for (const [cat, score] of sortedScores) {
-      const div = document.createElement("div");
-      div.className = "result-item";
+    // Show results
+    form.style.display = 'none';
+    resultsSection.style.display = 'block';
 
-      const tooltipText = `
-Опис: ${categoryDescriptions[cat]?.description || ""}
-Ролі: ${categoryDescriptions[cat]?.roles || ""}
-Діяльність: ${categoryDescriptions[cat]?.activities || ""}
-Навчання: ${categoryDescriptions[cat]?.learning || ""}
-      `.trim();
+    drawChart(sortedCategories);
+  });
 
-      const spanCat = document.createElement("span");
-      spanCat.textContent = cat + ": ";
-      spanCat.className = "tooltip";
-      spanCat.title = tooltipText;
+  // Draw colored bar chart on canvas
+  function drawChart(sortedCategories) {
+    const ctx = resultsCanvas.getContext('2d');
+    const width = resultsCanvas.width;
+    const height = resultsCanvas.height;
+    const paddingLeft = 140;
+    const paddingTop = 30;
+    const barHeight = 28;
+    const gap = 18;
+    const maxBarWidth = width - paddingLeft - 40;
 
-      const spanScore = document.createElement("span");
-      spanScore.textContent = `${score} балів`;
+    ctx.clearRect(0, 0, width, height);
 
-      div.appendChild(spanCat);
-      div.appendChild(spanScore);
-      resultScores.appendChild(div);
-    }
+    // Find max score to scale bars
+    const maxScore = Math.max(...sortedCategories.map(c => c[1]));
 
-    drawChart(sortedScores);
-  }
+    ctx.textBaseline = 'middle';
+    ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif';
+    ctx.fillStyle = '#1c1c1e';
 
-  function drawChart(sortedScores) {
-    if (chart) {
-      chart.destroy();
-    }
+    sortedCategories.forEach((cat, idx) => {
+      const y = paddingTop + idx * (barHeight + gap);
+      const [name, score] = cat;
+      const color = categoryColors[name] || '#999';
 
-    chart = new Chart(resultChartCtx, {
-      type: "bar",
-      data: {
-        labels: sortedScores.map(([cat]) => cat),
-        datasets: [{
-          label: "Бали",
-          data: sortedScores.map(([_, score]) => score),
-          backgroundColor: "#007acc"
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1 }
-          }
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: true }
-        }
-      }
+      // Draw label
+      ctx.fillText(`${name} (${score})`, 12, y + barHeight/2);
+
+      // Draw bar background (light gray)
+      ctx.fillStyle = '#e5e5ea';
+      ctx.fillRect(paddingLeft, y, maxBarWidth, barHeight);
+
+      // Draw bar fill
+      const barWidth = maxBarWidth * (score / maxScore);
+      ctx.fillStyle = color;
+      ctx.fillRect(paddingLeft, y, barWidth, barHeight);
     });
   }
 
-  // Експорт у PDF
-  exportPdfBtn.onclick = async () => {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-
-    let y = 10;
-    pdf.setFontSize(16);
-    pdf.text("Результати тесту Множинних Інтелектів", 10, y);
-    y += 10;
-
-    const sortedScores = Object.entries(scores).sort((a,b) => b[1]-a[1]);
-    pdf.setFontSize(12);
-
-    for (const [cat, score] of sortedScores) {
-      pdf.text(`${cat}: ${score} балів`, 10, y);
-      y += 7;
-      if (y > 270) {
-        pdf.addPage();
-        y = 10;
-      }
-    }
-
-    // Додати графік у PDF
-    const canvas = document.getElementById("result-chart");
-    const imgData = canvas.toDataURL("image/png", 1.0);
-    pdf.addPage();
-    pdf.text("Графік результатів", 10, 10);
-    pdf.addImage(imgData, 'PNG', 10, 20, 180, 120);
-
-    pdf.save("result.pdf");
-  };
-
-  // Експорт як зображення
-  exportImgBtn.onclick = () => {
-    const canvas = document.getElementById("result-chart");
-    const link = document.createElement("a");
-    link.download = "result-chart.png";
-    link.href = canvas.toDataURL("image/png");
+  // Download canvas as PNG
+  downloadBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'multiple_intelligences_results.png';
+    link.href = resultsCanvas.toDataURL('image/png');
     link.click();
-  };
+  });
+
+  // Initialize
+  renderQuestions();
 })();
 </script>
-
 </body>
 </html>
