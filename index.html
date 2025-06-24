@@ -206,7 +206,8 @@
                 <ul id="result-list"></ul>
             </div>
             <button class="answer-btn start-btn" onclick="restartTest()">Пройти тест ще раз</button>
-            <button class="answer-btn download-btn" onclick="downloadReport()">Завантажити звіт</button>
+            <button class="answer-btn download-btn" onclick="downloadReport()">Завантажити звіт (PDF)</button>
+            <button class="answer-btn download-btn" onclick="downloadLatexReport()">Завантажити звіт (LaTeX)</button>
         </div>
     </div>
 
@@ -550,6 +551,61 @@
 
                 pdf.save(`${userName}_Multiple_Intelligences_Report.pdf`);
             });
+        }
+
+        function downloadLatexReport() {
+            const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+            const latexTemplate = `
+\\documentclass[a4paper,12pt]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[T2A]{fontenc}
+\\usepackage[ukrainian]{babel}
+\\usepackage{geometry}
+\\geometry{margin=2cm}
+\\usepackage{parskip}
+\\usepackage{xcolor}
+\\usepackage{enumitem}
+\\usepackage{titlesec}
+
+\\titleformat{\\section}{\\large\\bfseries}{\\thesection}{1em}{}
+\\titleformat{\\subsection}{\\normalsize\\bfseries}{\\thesubsection}{1em}{}
+
+\\begin{document}
+
+\\begin{center}
+    \\textbf{\\Large Множинні інтелекти за Гарднером для Лілі Москалюк}
+\\end{center}
+
+\\vspace{0.5cm}
+
+\\textbf{Ім'я:} ${userName.replace(/[$&\\]/g, '\\$&')} \\\\
+\\textbf{Вік:} ${userAge} \\\\
+\\textbf{Стать:} ${userGender} \\\\
+\\textbf{Дата:} ${new Date().toLocaleDateString('uk-UA')} \\\\
+
+\\section*{Результати}
+
+\\begin{itemize}[leftmargin=*]
+${sortedScores.map(([category, score]) => {
+    const { description, roles, activities, learning, color } = categories[category];
+    return `
+    \\item \\textbf{${category}: ${score} балів} \\\\
+          \\textcolor[HTML]{${color.replace('#', '')}}{\\textbf{Опис:}} ${description.replace(/[$&\\]/g, '\\$&')} \\\\
+          \\textcolor[HTML]{${color.replace('#', '')}}{\\textbf{Ролі:}} ${roles.replace(/[$&\\]/g, '\\$&')} \\\\
+          \\textcolor[HTML]{${color.replace('#', '')}}{\\textbf{Діяльності:}} ${activities.replace(/[$&\\]/g, '\\$&')} \\\\
+          \\textcolor[HTML]{${color.replace('#', '')}}{\\textbf{Стиль навчання:}} ${learning.replace(/[$&\\]/g, '\\$&')}
+    `;
+}).join('\n')}
+\\end{itemize}
+
+\\end{document}
+            `;
+            const blob = new Blob([latexTemplate], { type: 'text/x-tex' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${userName}_Multiple_Intelligences_Report.tex`;
+            link.click();
+            URL.revokeObjectURL(link.href);
         }
 
         function restartTest() {
